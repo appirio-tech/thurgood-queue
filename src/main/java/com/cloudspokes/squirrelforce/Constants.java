@@ -9,5 +9,5 @@ public class Constants {
 	public static final String MAIN_SENDER_KEY = "MAIN_SENDER";
 	public static final String LANG_RECEIVER_KEY_PREFIX = "LANG_RECEIVER-";
 	
-	public static final String CLOUD_AMQP_URL = "amqp://app8865552_heroku.com:_c3T2LjHkNnsJ6XWhx1HKzu_jB9Psq2i@tiger.cloudamqp.com/app8865552_heroku.com";
+	public static final String CLOUD_AMQP_URL = "amqp://app9629523_heroku.com:K7RZzoTUTfKSSk3RZ6tOdyjlCO-2XgLi@tiger.cloudamqp.com/app9629523_heroku.com";
 }
