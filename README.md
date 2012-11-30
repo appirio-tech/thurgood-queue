@@ -13,8 +13,8 @@ This is required to run the client locally and send to RabbitMQ on Server.
 Note: For running Java server and client below, make sure you have the right classpath configured 
 or use the classpath on command line. Here is the OSX invocation command below for starting the client. 
 
-  cd /Users/Jeff/Documents/workspaces/cloudspokes/squirrelforce/target
-  java -cp /Users/Jeff/Documents/java/rabbitmq-client.jar:./squirrelforce-1.0-SNAPSHOT.jar com.cloudspokes.squirrelforce.SenderClient local
+	cd /Users/Jeff/Documents/workspaces/cloudspokes/squirrelforce/target
+	java -cp /Users/Jeff/Documents/java/rabbitmq-client.jar:./squirrelforce-1.0-SNAPSHOT.jar com.cloudspokes.squirrelforce.SenderClient local
 
 ## Running Client - Local
 
