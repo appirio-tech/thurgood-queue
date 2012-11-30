@@ -45,7 +45,7 @@ public class SenderClient {
 			System.out.println("");
 			line =  br.readLine();
 		}
-		System.out.println("\n\nThanks for playing. Exiting now.");
+		System.out.println("\n\nSquirrelforce!!!!!! Exiting now.");
 
 		channel.close();
 		connection.close();

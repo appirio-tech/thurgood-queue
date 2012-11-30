@@ -14,7 +14,6 @@ Note: For running Java server and client below, make sure you have the right cla
 or use the classpath on command line. Here is the OSX invocation command below for starting the client. 
 
 	cd /Users/Jeff/Documents/workspaces/cloudspokes/squirrelforce/target
-	
 	java -cp /Users/Jeff/Documents/java/rabbitmq-client.jar:./squirrelforce-1.0-SNAPSHOT.jar com.cloudspokes.squirrelforce.SenderClient local
 
 ## Running Client - Local
