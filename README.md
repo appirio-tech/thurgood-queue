@@ -19,7 +19,7 @@ or use the classpath on command line. Here is the OSX invocation command below f
 ## Running Client - Local
 
 1. Start Main class. Web app will be started on http://localhost:8080
-2. Start client using command 'java SenderClient local'
+2. Start client using command 'java SenderClient local' 
 3. Paste data from the file testData.dat to the command line
 4. You will see data being sent in the client window and data being received and sent to Type queues in the server (i.e. Main) window.
 5. On a browser go to http://localhost:8080. You will see statistics of the messages being sent by client and processed by server. 
