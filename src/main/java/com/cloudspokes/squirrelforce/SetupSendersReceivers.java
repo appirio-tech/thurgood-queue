@@ -35,15 +35,15 @@ public class SetupSendersReceivers extends HttpServlet {
 		if (uri == null)
 			uri = "amqp://guest:guest@localhost";
 
-		//Get connection and start receievers and senders
+		//Get connection and start receivers and senders
 		try {
 			ConnectionFactory factory = new ConnectionFactory();
 			factory.setUri(uri);
 	
 			Connection connection = factory.newConnection();
 	
-			//Setup Statistics class
-			MessageStats stats = new MessageStats(langs);
+			//Setup Statistics class -- not used?
+			// MessageStats stats = new MessageStats(langs);
 			
 			//Setup main sender/receiver - this will receive from client and push out to appropriate receivers
 			MainReceiverSender mainReceiverSender = new MainReceiverSender(connection);

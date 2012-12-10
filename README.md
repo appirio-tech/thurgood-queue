@@ -35,7 +35,7 @@ or use the classpath on command line. Here is the OSX invocation command below f
 ## Ruby Client
 
 	require "bunny"
-	b = Bunny.new ENV['CLOUDAMQP_URL']; # omit URL to run locally
+	b = Bunny.new ENV['CLOUDAMQP_URL'] # omit URL to run locally
 	b.start
 	q = b.queue("mainQueue")
 	q.publish('{"url":"https://google.com","Type":"apex","Name":"CPS-1234","ID":"a0GU0000007AGDa"}')

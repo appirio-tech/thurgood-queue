@@ -7,7 +7,8 @@ public class MessageStats {
 	private static Map<String, Integer> stats = new LinkedHashMap<String, Integer>();
 	private static String[] langs;
 
-	public MessageStats(String[] langs) {
+	@SuppressWarnings("static-access")
+  public MessageStats(String[] langs) {
 		this.langs = langs;
 		
 		//Initialize the stats
