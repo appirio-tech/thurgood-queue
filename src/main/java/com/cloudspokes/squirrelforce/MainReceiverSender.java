@@ -37,7 +37,7 @@ public class MainReceiverSender implements Runnable {
 				String message = new String(delivery.getBody());
 				System.out.println(" [x] Received in mainQueue receiver: '"
 						+ message + "'");
-				MessageStats.receivedInMainQ();
+				// MessageStats.receivedInMainQ();
 
 				JsonElement jsonElement = new JsonParser().parse(message);
 				if (jsonElement.isJsonObject()) {
@@ -52,7 +52,7 @@ public class MainReceiverSender implements Runnable {
 						//Route to appropriate queue based on received type (i.e. lang)
 						sendChannel.basicPublish(Constants.EXCHANGE_NAME, type, null,
 								message.getBytes());
-						MessageStats.sentInMainQ();
+						// MessageStats.sentInMainQ();
 					}
 				}
 			}
