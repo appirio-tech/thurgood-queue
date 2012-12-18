@@ -53,21 +53,22 @@ public class LangReceiver implements Runnable {
         // parse the json
         JSONObject jsonMessage = new JSONObject(message);
         String submissionUrl = jsonMessage.getString("url");
-        String submissionName = jsonMessage.getString("name");
-        // String submissionId = jsonMessage.getString("id");
         
+        // reserve a server and then use the configuration
         JSONObject server = getSquirrelforceServer("jeffdonthemic");
         
         if (server != null) {
+          
           System.out.println("Reserved Server: " + server.getString("name"));
           System.out.println("Username: " + server.getString("username"));
           System.out.println("Password: " + server.getString("password"));
+          System.out.println("Repo: " + server.getString("repo_name"));
           
-          System.out.println("Processing submission " + submissionName
+          System.out.println("Processing submission " + jsonMessage.getString("name")
               + " with code from " + submissionUrl);
           System.out.println("Kicking off GitterUp...");
 
-          String results = GitterUp.unzipToGit(submissionUrl, submissionName);
+          String results = GitterUp.unzipToGit(submissionUrl, server.getString("repo_name"));
           System.out.println(results);     
           
         } else {

@@ -40,7 +40,9 @@ public class Tester {
 
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {
-          System.out.println("Doing something cool.");
+          System.out.println(System.getenv("GIT_USERNAME"));
+          System.out.println(System.getenv("GIT_PASSWORD"));
+          System.out.println(System.getenv("GIT_OWNER"));
         }
 
         showMenu();

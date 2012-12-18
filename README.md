@@ -16,6 +16,14 @@ or use the classpath on command line. Here is the OSX invocation command below f
 	cd /Users/Jeff/Documents/workspaces/cloudspokes/squirrelforce/target
 	java -cp /Users/Jeff/Documents/java/rabbitmq-client.jar:./squirrelforce-1.0-SNAPSHOT.jar com.cloudspokes.squirrelforce.SenderClient local
 
+## Environment Variables
+
+Requires the following variables at runtime:
+
+GIT_USERNAME
+GIT_PASSWORD
+GIT_OWNER
+
 ## Running Client - Local
 
 1. Start Main class. Web app will be started on http://localhost:8080
