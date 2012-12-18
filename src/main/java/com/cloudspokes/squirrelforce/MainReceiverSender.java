@@ -37,14 +37,13 @@ public class MainReceiverSender implements Runnable {
 				String message = new String(delivery.getBody());
 				System.out.println(" [x] Received in mainQueue receiver: '"
 						+ message + "'");
-				// MessageStats.receivedInMainQ();
 
 				JsonElement jsonElement = new JsonParser().parse(message);
 				if (jsonElement.isJsonObject()) {
 					JsonObject jsonObj = jsonElement.getAsJsonObject();
 					String type = null;
-					if (jsonObj.has("Type")) {
-						type = jsonObj.get("Type").getAsString();
+					if (jsonObj.has("type")) {
+						type = jsonObj.get("type").getAsString().toLowerCase();
 					}
 					if (type == null) {
 						System.out.println("Message does not contain Type. Cannot send out. Message: " + message);
@@ -52,7 +51,6 @@ public class MainReceiverSender implements Runnable {
 						//Route to appropriate queue based on received type (i.e. lang)
 						sendChannel.basicPublish(Constants.EXCHANGE_NAME, type, null,
 								message.getBytes());
-						// MessageStats.sentInMainQ();
 					}
 				}
 			}

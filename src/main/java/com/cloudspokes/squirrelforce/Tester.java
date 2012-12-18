@@ -1,16 +1,15 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
 
 import com.cloudspokes.squirrelforce.services.GitterUp;
-import com.cloudspokes.squirrelforce.services.IOUtils;
-import com.cloudspokes.squirrelforce.services.MultiSourceCommitService;
 
 public class Tester {
 
@@ -36,10 +35,12 @@ public class Tester {
 
           String results = GitterUp
               .unzipToGit(
-                  "http://cs-production.s3.amazonaws.com/challenges/1884/wcheung/octavius3.zip",
-                  "sqtest2");
+                  "http://cs-public.s3.amazonaws.com/squirrelforce/jenkins-test.zip",
+                  "jenkins-test");
 
           System.out.println(results);
+        } else if (Integer.parseInt(choice) == 2) {
+          System.out.println("Doing something cool.");
         }
 
         showMenu();
@@ -60,7 +61,8 @@ public class Tester {
   }
 
   private void showMenu() {
-    System.out.println("\n1. First selection");
+    System.out.println("\n1. Unzip to Git");
+    System.out.println("2. Reserve server");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");

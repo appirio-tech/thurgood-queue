@@ -8,32 +8,34 @@ import com.cloudspokes.squirrelforce.services.IOUtils;
 import com.cloudspokes.squirrelforce.services.MultiSourceCommitService;
 
 public class GitterUp {
-  
-  public static String unzipToGit(String url, String repoName) {
-    
+
+  public static String unzipToGit(String zipUrl, String repoName) {
+
     String results = "";
-    
+
     MultiSourceCommitService commitService = new MultiSourceCommitService();
-    commitService.setCredentials("jeff@jeffdouglas.com","6G8}4Hm.9z");          
-    
-    File sourceZip = IOUtils.downloadFromUrlToTempFile("http://cs-production.s3.amazonaws.com/challenges/1884/wcheung/octavius3.zip");
+    commitService.setCredentials(System.getenv("GIT_USERNAME"),
+        System.getenv("GIT_PASSWORD"), System.getenv("GIT_OWNER"));
+
+    File sourceZip = IOUtils.downloadFromUrlToTempFile(zipUrl);
     File overlayFolder = IOUtils.unzipToTempDir(sourceZip);
     List<File> folders = Collections.singletonList(overlayFolder);
-    
+
     try {
-      String repoUrl = commitService.commitFromFoldersToNewRepo(
-          folders, repoName, false);
-      results = "new repo created: " + repoUrl;
+      String repoUrl = commitService.commitFromFoldersToNewRepo(folders,
+          repoName, false);
+      results = "committed to repo: " + repoUrl;
 
     } catch (Exception e) {
-        results = "commitFromFoldersToNewRepo failed: " + e.getClass().getName() + " -  " + e.getMessage();  
+      results = "commitFromFoldersToNewRepo failed: " + e.getClass().getName()
+          + " -  " + e.getMessage();
     } finally {
-        sourceZip.delete();
-        IOUtils.deleteDir(overlayFolder);
-    }       
-    
+      sourceZip.delete();
+      IOUtils.deleteDir(overlayFolder);
+    }
+
     return results;
-    
+
   }
 
 }

@@ -1,13 +1,20 @@
 package com.cloudspokes.squirrelforce;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.cloudspokes.squirrelforce.services.GitterUp;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.QueueingConsumer;
-
-import org.json.JSONObject;
 
 public class LangReceiver implements Runnable {
   private String lang = null;
@@ -42,20 +49,30 @@ public class LangReceiver implements Runnable {
 
         System.out.println(" [x] Received in receiver: " + lang + "'"
             + routingKey + "':'" + message + "'");
-        // MessageStats.receivedLangQ(lang);
 
         // parse the json
         JSONObject jsonMessage = new JSONObject(message);
         String submissionUrl = jsonMessage.getString("url");
-        String submissionName = jsonMessage.getString("Name");
-        String submissionId = jsonMessage.getString("ID");
+        String submissionName = jsonMessage.getString("name");
+        // String submissionId = jsonMessage.getString("id");
+        
+        JSONObject server = getSquirrelforceServer("jeffdonthemic");
+        
+        if (server != null) {
+          System.out.println("Reserved Server: " + server.getString("name"));
+          System.out.println("Username: " + server.getString("username"));
+          System.out.println("Password: " + server.getString("password"));
+          
+          System.out.println("Processing submission " + submissionName
+              + " with code from " + submissionUrl);
+          System.out.println("Kicking off GitterUp...");
 
-        System.out.println("Processing submission " + submissionName
-            + " with code " + submissionUrl);
-        System.out.println("Kicking off GitterUp...");
-
-        String results = GitterUp.unzipToGit(submissionUrl, submissionName);
-        System.out.println(results);
+          String results = GitterUp.unzipToGit(submissionUrl, submissionName);
+          System.out.println(results);     
+          
+        } else {
+          System.out.println("Could not get a server");
+        }
 
       }
     } catch (Exception e) {
@@ -73,6 +90,40 @@ public class LangReceiver implements Runnable {
         }
       }
     }
+  }
+
+  private JSONObject getSquirrelforceServer(String membername)
+      throws ClientProtocolException, IOException, JSONException {
+
+    System.out.println("Reserving Squirrelforce server....");
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(
+        "http://cs-api-sandbox.herokuapp.com/v1/squirrelforce/reserve_server?membername="
+            + membername);
+    getRequest.addHeader("accept", "application/json");
+    HttpResponse response = httpClient.execute(getRequest);
+    BufferedReader br = new BufferedReader(new InputStreamReader(
+        (response.getEntity().getContent())));
+    String output;
+    JSONObject payload = null;
+    ;
+    while ((output = br.readLine()) != null) {
+      // System.out.println(output);
+      payload = new JSONObject(output).getJSONObject("response");
+      break;
+    }
+    httpClient.getConnectionManager().shutdown();
+
+    JSONObject server = null;
+
+    if (payload.getBoolean("success")) {
+      server = payload.getJSONObject("server");
+    } else {
+      System.out.println(payload.getString("message"));
+    }
+
+    return server;
+
   }
 
 }

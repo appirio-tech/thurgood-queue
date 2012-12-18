@@ -41,9 +41,6 @@ public class SetupSendersReceivers extends HttpServlet {
 			factory.setUri(uri);
 	
 			Connection connection = factory.newConnection();
-	
-			//Setup Statistics class -- not used?
-			// MessageStats stats = new MessageStats(langs);
 			
 			//Setup main sender/receiver - this will receive from client and push out to appropriate receivers
 			MainReceiverSender mainReceiverSender = new MainReceiverSender(connection);

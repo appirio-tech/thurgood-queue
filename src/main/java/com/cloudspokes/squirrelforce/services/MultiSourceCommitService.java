@@ -38,6 +38,7 @@ public class MultiSourceCommitService {
     private final Set<String> binaryFileExtensionsLowercase;
     private final Set<String> entriesToIgnoreLowercase;
     private String organization;
+    private String repoOwner;
 
     private String commitMessage = DEFAULT_COMMIT_MSG;
 
@@ -59,8 +60,9 @@ public class MultiSourceCommitService {
         return this;
     }
 
-    public MultiSourceCommitService setCredentials(String user, String password) {
+    public MultiSourceCommitService setCredentials(String user, String password, String owner) {
         this.client.setCredentials(user, password);
+        this.repoOwner = owner;
         return this;
     }
 
@@ -112,7 +114,7 @@ public class MultiSourceCommitService {
      * @throws IOException
      */
     public String commitFromFoldersToNewRepo(List<File> folders, String repoName, boolean isPrivate) throws IOException {
-        Repository repo = newRepo(repoName, isPrivate);
+        Repository repo = getRepo(repoName);
         List<TreeEntry> treeEntries = new ArrayList<TreeEntry>();
 
         for (File folder : folders) {
@@ -173,6 +175,11 @@ public class MultiSourceCommitService {
         }
         return false;
     }
+    
+    private Repository getRepo(String repoName) throws IOException {
+      Repository repo = repositoryService.getRepository(repoOwner, repoName);
+      return repo;
+  }    
 
     private Repository newRepo(String repoName, boolean isPrivate) throws IOException {
         Repository repo = new InitializableRepository();
