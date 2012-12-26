@@ -53,8 +53,6 @@ public class LangReceiver implements Runnable {
         // parse the json
         JSONObject jsonMessage = new JSONObject(message);
         String submissionUrl = jsonMessage.getString("url");
-
-        System.out.println("Membername: " + jsonMessage.getString("membername"));
         
         // reserve a server and then use the configuration
         JSONObject server = getSquirrelforceServer(jsonMessage.getString("membername"));
@@ -62,8 +60,6 @@ public class LangReceiver implements Runnable {
         if (server != null) {
           
           System.out.println("Reserved Server: " + server.getString("name"));
-          System.out.println("Username: " + server.getString("username"));
-          System.out.println("Password: " + server.getString("password"));
           System.out.println("Repo: " + server.getString("repo_name"));
           
           System.out.println("Processing submission " + jsonMessage.getString("name")
