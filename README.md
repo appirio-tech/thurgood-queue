@@ -20,17 +20,17 @@ or use the classpath on command line. Here is the OSX invocation command below f
 
 Requires the following variables at runtime:
 
-GIT_USERNAME
-GIT_PASSWORD
-GIT_OWNER
+GIT_USERNAME  
+GIT_PASSWORD  
+GIT_OWNER  
 
 ## Running Client - Local
 
-1. Start Main class. Web app will be started on http://localhost:8080
-2. Start client using command 'java SenderClient local' 
-3. Paste data from the file testData.dat to the command line
-4. You will see data being sent in the client window and data being received and sent to Type queues in the server (i.e. Main) window.
-5. On a browser go to http://localhost:8080. You will see statistics of the messages being sent by client and processed by server. 
+1. Start rabbitmq-server locally
+2. Run Main.java to start the server. Web app will be started on http://localhost:8080
+3. Start client using command 'java SenderClient local' (see setup instructions above for classpaths)
+4. Paste the test data below to the command line
+5. You will see data being sent in the client window and data being received and sent to Type queues in the server (i.e. Main) window. 
 
 ## Running Client - Heroku
 
@@ -38,7 +38,6 @@ GIT_OWNER
 2. Start client using command 'java SenderClient heroku'
 3. Paste data from the file testData.dat to the command line
 4. You will see data being sent in the client window and data being received and sent to Type queues in the server window, i.e. Heroku Logs window.
-5. On a browser go to http://<yourapp>.herokuapp.com. You will see statistics of the messages being sent by client and processed by server. 
 
 ## Ruby Client
 
@@ -52,13 +51,4 @@ GIT_OWNER
 
 ## Test Data
 
-{"url":"https://google.com","Type":"apex","Name":"CPS-1234","ID":"a0GU0000007AGDa"}
-{"url":"https://google.com","Type":"ruby","Name":"CPS-123455","ID":"a0GU00ASD007AGDa"}
-{"url":"https://google.com","Type":"java","Name":"CPS-12323424","ID":"a0GU0000007AGDa"}
-{"url":"https://google.com","Type":"apex","Name":"CPS-1256734","ID":"a0GU0XCV07AGDa"}
-{"url":"https://google.com","Type":"java","Name":"CPS-12323454","ID":"a0GU0000007AGDa"}
-{"url":"https://google.com","Type":"javascript","Name":"CPS-1123213234","ID":"a0GU0000007AGDa"}
-{"url":"https://google.com","Type":"python","Name":"CPS-123534534","ID":"a0GU0000007AGDa"}
-{"url":"https://google.com","Type":"ruby","Name":"CPS-123353454","ID":"a0GU0AS07AGDa"}
-{"url":"https://google.com","Type":"python","Name":"CPS-135345234","ID":"a0GU02143007AGDa"}
-{"url":"https://google.com","Type":"ruby","Name":"CPS-1123123234","ID":"a0GU0000007AGDa"}
+{"id":"a19Z00000009wfpIAA","name":"SD-1002","url":"http://cs-public.s3.amazonaws.com/squirrelforce/jenkins-test.zip","type":"Apex","membername":"mess"}
