@@ -18,7 +18,7 @@ or use the classpath on command line. Here is the OSX invocation command below f
 
 ## Environment Variables
 
-Requires the following variables at runtime:
+Requires the following variables at runtime for Tester.java:
 
 GIT_USERNAME  
 GIT_PASSWORD  
