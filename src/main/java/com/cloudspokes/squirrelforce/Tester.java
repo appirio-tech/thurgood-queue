@@ -1,13 +1,9 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONObject;
 
 import com.cloudspokes.squirrelforce.services.GitterUp;
 
@@ -36,7 +32,8 @@ public class Tester {
           String results = GitterUp
               .unzipToGit(
                   "http://cs-public.s3.amazonaws.com/squirrelforce/jenkins-test.zip",
-                  "jenkins-test");
+                  "jenkins-test",
+                  new File("./src/main/webapp/WEB-INF/shells/apex"));
 
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {

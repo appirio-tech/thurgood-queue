@@ -1,6 +1,7 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -17,12 +18,25 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class LangReceiver implements Runnable {
+
+  private static final String RELATIVE_PATH_OF_SHELLS_FOLDER_UNDER_WEBAPP_DIR = "WEB-INF/shells/";
+
   private String lang = null;
   private Connection connection = null;
+
+  /**
+   * The <i>shell folder</i> for the language of this receiver, whose contents
+   * will be included in all uploads for this language, in addition to any
+   * dynamic content.
+   */
+  private final File langShellFolder;
 
   public LangReceiver(String lang, Connection connection) {
     this.lang = lang;
     this.connection = connection;
+
+    langShellFolder = VirtualFile.fromRelativePath(
+      RELATIVE_PATH_OF_SHELLS_FOLDER_UNDER_WEBAPP_DIR + lang);
   }
 
   public void run() {
@@ -53,22 +67,22 @@ public class LangReceiver implements Runnable {
         // parse the json
         JSONObject jsonMessage = new JSONObject(message);
         String submissionUrl = jsonMessage.getString("url");
-        
+
         // reserve a server and then use the configuration
         JSONObject server = getSquirrelforceServer(jsonMessage.getString("membername"));
-        
+
         if (server != null) {
-          
+
           System.out.println("Reserved Server: " + server.getString("name"));
           System.out.println("Repo: " + server.getString("repo_name"));
-          
+
           System.out.println("Processing submission " + jsonMessage.getString("name")
               + " with code from " + submissionUrl);
           System.out.println("Kicking off GitterUp...");
 
-          String results = GitterUp.unzipToGit(submissionUrl, server.getString("repo_name"));
-          System.out.println(results);     
-          
+          String results = GitterUp.unzipToGit(submissionUrl, server.getString("repo_name"), langShellFolder);
+          System.out.println(results);
+
         } else {
           System.out.println("Could not get a server");
         }
