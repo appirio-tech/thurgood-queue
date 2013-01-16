@@ -1,9 +1,18 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.cloudspokes.squirrelforce.services.GitterUp;
 
@@ -36,10 +45,8 @@ public class Tester {
                   new File("./src/main/webapp/WEB-INF/shells/apex"));
 
           System.out.println(results);
-        } else if (Integer.parseInt(choice) == 2) {
-          System.out.println(System.getenv("GIT_USERNAME"));
-          System.out.println(System.getenv("GIT_PASSWORD"));
-          System.out.println(System.getenv("GIT_OWNER"));
+        } else if (Integer.parseInt(choice) == 2) {          
+          System.out.println("done");
         }
 
         showMenu();
@@ -66,5 +73,38 @@ public class Tester {
     System.out.println(" ");
     System.out.println("Operation: ");
   }
+    
+  private JSONObject getSquirrelforceServer(String membername)
+      throws ClientProtocolException, IOException, JSONException {
+
+    System.out.println("Reserving Squirrelforce server....");
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(
+        "http://cs-api-sandbox.herokuapp.com/v1/squirrelforce/reserve_server?membername="
+            + membername);
+    getRequest.addHeader("accept", "application/json");
+    HttpResponse response = httpClient.execute(getRequest);
+    BufferedReader br = new BufferedReader(new InputStreamReader(
+        (response.getEntity().getContent())));
+    String output;
+    JSONObject payload = null;
+    ;
+    while ((output = br.readLine()) != null) {
+      payload = new JSONObject(output).getJSONObject("response");
+      break;
+    }
+    httpClient.getConnectionManager().shutdown();
+
+    JSONObject server = null;
+
+    if (payload.getBoolean("success")) {
+      server = payload.getJSONObject("server");
+    } else {
+      System.out.println(payload.getString("message"));
+    }
+
+    return server;
+
+  }  
 
 }

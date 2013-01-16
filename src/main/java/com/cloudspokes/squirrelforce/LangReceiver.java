@@ -1,7 +1,9 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -35,8 +37,9 @@ public class LangReceiver implements Runnable {
     this.lang = lang;
     this.connection = connection;
 
-    langShellFolder = VirtualFile.fromRelativePath(
-      RELATIVE_PATH_OF_SHELLS_FOLDER_UNDER_WEBAPP_DIR + lang);
+    langShellFolder = VirtualFile
+        .fromRelativePath(RELATIVE_PATH_OF_SHELLS_FOLDER_UNDER_WEBAPP_DIR
+            + lang);
   }
 
   public void run() {
@@ -69,18 +72,23 @@ public class LangReceiver implements Runnable {
         String submissionUrl = jsonMessage.getString("url");
 
         // reserve a server and then use the configuration
-        JSONObject server = getSquirrelforceServer(jsonMessage.getString("membername"));
+        JSONObject server = getSquirrelforceServer(jsonMessage
+            .getString("membername"));
+        // create the build.properties file in the shells dir
+        writeApexBuildProperties(server);
 
         if (server != null) {
 
           System.out.println("Reserved Server: " + server.getString("name"));
           System.out.println("Repo: " + server.getString("repo_name"));
 
-          System.out.println("Processing submission " + jsonMessage.getString("name")
-              + " with code from " + submissionUrl);
+          System.out.println("Processing submission "
+              + jsonMessage.getString("name") + " with code from "
+              + submissionUrl);
           System.out.println("Kicking off GitterUp...");
 
-          String results = GitterUp.unzipToGit(submissionUrl, server.getString("repo_name"), langShellFolder);
+          String results = GitterUp.unzipToGit(submissionUrl,
+              server.getString("repo_name"), langShellFolder);
           System.out.println(results);
 
         } else {
@@ -105,6 +113,20 @@ public class LangReceiver implements Runnable {
     }
   }
 
+  private void writeApexBuildProperties(JSONObject server) throws IOException,
+      JSONException {
+
+    String file_name = "./src/main/webapp/WEB-INF/shells/apex/build.properties";
+    FileWriter fstream = new FileWriter(file_name);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write("sf.username = " + server.get("username") + "\n");
+    out.write("sf.password = " + server.get("password") + "\n");
+    out.write("sf.serverurl = " + server.get("instance_url"));
+    out.close();
+    System.out.println("Successfully wrote build.properties");
+
+  }
+
   private JSONObject getSquirrelforceServer(String membername)
       throws ClientProtocolException, IOException, JSONException {
 
@@ -121,7 +143,6 @@ public class LangReceiver implements Runnable {
     JSONObject payload = null;
     ;
     while ((output = br.readLine()) != null) {
-      // System.out.println(output);
       payload = new JSONObject(output).getJSONObject("response");
       break;
     }
