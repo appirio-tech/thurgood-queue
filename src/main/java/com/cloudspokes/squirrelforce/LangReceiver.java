@@ -132,6 +132,10 @@ public class LangReceiver implements Runnable {
 
     System.out.println("Reserving Squirrelforce server at " 
         + System.getenv("CS_API_URL") + "....");
+    
+    System.out.println(System.getenv("CS_API_URL") + "/squirrelforce/reserve_server?membername="
+    + membername);    
+    
     DefaultHttpClient httpClient = new DefaultHttpClient();
     HttpGet getRequest = new HttpGet(
         System.getenv("CS_API_URL") + "/squirrelforce/reserve_server?membername="
