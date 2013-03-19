@@ -130,10 +130,11 @@ public class LangReceiver implements Runnable {
   private JSONObject getSquirrelforceServer(String membername)
       throws ClientProtocolException, IOException, JSONException {
 
-    System.out.println("Reserving Squirrelforce server....");
+    System.out.println("Reserving Squirrelforce server at " 
+        + System.getenv("CS_API_URL") + "....");
     DefaultHttpClient httpClient = new DefaultHttpClient();
     HttpGet getRequest = new HttpGet(
-        "http://cs-api-sandbox.herokuapp.com/v1/squirrelforce/reserve_server?membername="
+        System.getenv("CS_API_URL") + "/squirrelforce/reserve_server?membername="
             + membername);
     getRequest.addHeader("accept", "application/json");
     HttpResponse response = httpClient.execute(getRequest);
@@ -141,7 +142,7 @@ public class LangReceiver implements Runnable {
         (response.getEntity().getContent())));
     String output;
     JSONObject payload = null;
-    ;
+    
     while ((output = br.readLine()) != null) {
       payload = new JSONObject(output).getJSONObject("response");
       break;
