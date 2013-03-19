@@ -22,7 +22,8 @@ Requires the following variables at runtime for Tester.java:
 
 GIT_USERNAME  
 GIT_PASSWORD  
-GIT_OWNER  
+GIT_OWNER
+CS_API_URL (http://cs-api-sandbox.herokuapp.com/v1)  
 
 ## Running Client - Local
 

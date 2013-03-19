@@ -144,6 +144,7 @@ public class LangReceiver implements Runnable {
     JSONObject payload = null;
     
     while ((output = br.readLine()) != null) {
+      System.out.println("===== output: " + output);
       payload = new JSONObject(output).getJSONObject("response");
       break;
     }
