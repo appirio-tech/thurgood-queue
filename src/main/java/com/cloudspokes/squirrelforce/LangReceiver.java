@@ -80,7 +80,7 @@ public class LangReceiver implements Runnable {
             .getString("membername"));
         // create the build.properties file in the shells dir
         writeApexBuildProperties(server);
-        writeLog4jXmlFile("cloudspokes1.papertrailapp.com:35900");
+        //writeLog4jXmlFile("cloudspokes1.papertrailapp.com:35900");
 
         if (server != null) {
 
