@@ -12,7 +12,7 @@
   <appender name="syslog" class="org.apache.log4j.net.SyslogAppender"> 
     <param name="Facility" value="LOCAL7"/>
     <param name="FacilityPrinting" value="true"/>
-    <param name="SyslogHost" value="logs.papertrailapp.com:24214"/>
+    <param name="SyslogHost" value="{{SYSLOGHOST}}"/>
     <layout class="org.apache.log4j.PatternLayout"> 
       <param name="ConversionPattern" value="%5r %-5p %-21d{yyyy-MM-dd HH:mm:ss,SSS} %m %n"/>
     </layout> 
