@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -80,7 +81,7 @@ public class LangReceiver implements Runnable {
             .getString("membername"));
         // create the build.properties file in the shells dir
         writeApexBuildProperties(server);
-        //writeLog4jXmlFile("cloudspokes1.papertrailapp.com:35900");
+        writeLog4jXmlFile("cloudspokes1.papertrailapp.com:35900");
 
         if (server != null) {
 
@@ -134,15 +135,14 @@ public class LangReceiver implements Runnable {
   
   private void writeLog4jXmlFile(String syslogHost) {
   
-    InputStream is = null;
     PrintWriter out = null;
-    String inputfile = "./src/main/webapp/WEB-INF/shells/log4j.xml";
     String outputfile = "./src/main/webapp/WEB-INF/shells/apex/log4j.xml";
     try {
-        is = new FileInputStream(inputfile);
+        URL log4jTemplate = new URL("http://squirrelforce.herokuapp.com/log4j.xml");
         File outFile = new File(outputfile);
         out = new PrintWriter(new FileWriter(outFile));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        // read the xml template in from the url
+        BufferedReader reader = new BufferedReader(new InputStreamReader(log4jTemplate.openStream()));
         String line;
         while ((line = reader.readLine()) != null) {
             // check for replacement
@@ -156,13 +156,8 @@ public class LangReceiver implements Runnable {
         throw new RuntimeException(e);
 
     } finally {
-      if (is != null) {
-        try {
-            is.close();
-            out.close();
-        } catch (IOException e) {
-            // ignore
-        }
+      if (out != null) {
+        out.close();
       }
     }
     System.out.println("Successfully wrote log4j.xml");
