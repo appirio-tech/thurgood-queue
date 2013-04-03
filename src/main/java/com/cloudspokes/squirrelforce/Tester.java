@@ -1,11 +1,14 @@
 package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -47,6 +50,8 @@ public class Tester {
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {          
           System.out.println("done");
+        } else if (Integer.parseInt(choice) == 3) {          
+          writeLog4jXmlFile("logs.papertrailapp.com:24214");
         }
 
         showMenu();
@@ -69,9 +74,44 @@ public class Tester {
   private void showMenu() {
     System.out.println("\n1. Unzip to Git");
     System.out.println("2. Reserve server");
+    System.out.println("3. Write Log4j File");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");
+  }
+  
+  private void writeLog4jXmlFile(String syslogHost) {
+    InputStream is = null;
+    PrintWriter out = null;
+    String inputfile = "./src/main/webapp/WEB-INF/shells/log4j.xml";
+    String outputfile = "./src/main/webapp/WEB-INF/shells/apex/log4j.xml";
+    try {
+        is = new FileInputStream(inputfile);
+        File outFile = new File(outputfile);
+        out = new PrintWriter(new FileWriter(outFile));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // check for replacement
+            if (line.indexOf("{{SYSLOGHOST}}",0) != -1) {
+              line = line.replace("{{SYSLOGHOST}}", syslogHost);
+            }
+            out.write(line + "\r\n");
+        }
+
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+
+    } finally {
+      if (is != null) {
+        try {
+            is.close();
+            out.close();
+        } catch (IOException e) {
+            // ignore
+        }
+      }
+    }
   }
     
   private JSONObject getSquirrelforceServer(String membername)
@@ -88,7 +128,6 @@ public class Tester {
         (response.getEntity().getContent())));
     String output;
     JSONObject payload = null;
-    ;
     while ((output = br.readLine()) != null) {
       payload = new JSONObject(output).getJSONObject("response");
       break;
