@@ -11,16 +11,15 @@
 
   <appender name="syslog" class="org.apache.log4j.net.SyslogAppender"> 
     <param name="Facility" value="LOCAL7"/>
-    <param name="FacilityPrinting" value="true"/>
     <param name="SyslogHost" value="{{SYSLOGHOST}}"/>
     <layout class="org.apache.log4j.PatternLayout"> 
-      <param name="ConversionPattern" value="%5r %-5p %-21d{yyyy-MM-dd HH:mm:ss,SSS} %m %n"/>
+      <param name="ConversionPattern" value="%d{MMM dd HH:mm:ss} {{PARTICIPANT_ID}} jenkins: %c{2} %x %m %n"/>
     </layout> 
   </appender>
 
   <root> 
     <priority value="info"/> 
     <appender-ref ref="console"/> 
-    <appender-ref ref="syslog"/>
+    <appender-ref ref="syslog"/> 
   </root>
 </log4j:configuration>
