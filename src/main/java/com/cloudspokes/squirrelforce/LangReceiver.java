@@ -3,19 +3,17 @@ package com.cloudspokes.squirrelforce;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,13 +73,18 @@ public class LangReceiver implements Runnable {
         // parse the json
         JSONObject jsonMessage = new JSONObject(message);
         String submissionUrl = jsonMessage.getString("url");
+        String participantId = jsonMessage.getString("challenge_participant");
+        String membername = jsonMessage.getString("membername");
 
         // reserve a server and then use the configuration
-        JSONObject server = getSquirrelforceServer(jsonMessage
-            .getString("membername"));
+        JSONObject server = getSquirrelforceServer(membername);
+        // get the participant's papertrail system info for the logger
+        JSONObject papertrailSystem = getPapertrailSystem(participantId);
+        
         // create the build.properties file in the shells dir
         writeApexBuildProperties(server);
-        writeLog4jXmlFile("cloudspokes1.papertrailapp.com:35900");
+        writeLog4jXmlFile(papertrailSystem.getString("syslog_hostname"), 
+            papertrailSystem.getInt("syslog_port"), participantId);
 
         if (server != null) {
 
@@ -133,7 +136,7 @@ public class LangReceiver implements Runnable {
 
   }
   
-  private void writeLog4jXmlFile(String syslogHost) {
+  private void writeLog4jXmlFile(String hostname, int port, String participantId) {
   
     PrintWriter out = null;
     String outputfile = "./src/main/webapp/WEB-INF/shells/apex/log4j.xml";
@@ -145,10 +148,13 @@ public class LangReceiver implements Runnable {
         BufferedReader reader = new BufferedReader(new InputStreamReader(log4jTemplate.openStream()));
         String line;
         while ((line = reader.readLine()) != null) {
-            // check for replacement
-            if (line.indexOf("{{SYSLOGHOST}}",0) != -1) {
-              line = line.replace("{{SYSLOGHOST}}", syslogHost);
-            }
+            // check for replacements
+            if (line.indexOf("{{SYSLOGHOST}}",0) != -1)
+              line = line.replace("{{SYSLOGHOST}}", hostname + ":" + port);
+
+            if (line.indexOf("{{PARTICIPANT_ID}}",0) != -1)
+              line = line.replace("{{PARTICIPANT_ID}}", participantId);
+
             out.write(line + "\r\n");
         }
 
@@ -174,6 +180,8 @@ public class LangReceiver implements Runnable {
     HttpGet getRequest = new HttpGet(
         System.getenv("CS_API_URL") + "/squirrelforce/reserve_server?membername="
             + membername);
+    getRequest.setHeader(new BasicHeader("Authorization", 
+        "Token token=" + System.getenv("CS_API_KEY")));
     getRequest.addHeader("accept", "application/json");
     HttpResponse response = httpClient.execute(getRequest);
     BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -198,5 +206,33 @@ public class LangReceiver implements Runnable {
     return server;
 
   }
+  
+  private JSONObject getPapertrailSystem(String participantId) 
+      throws ClientProtocolException, IOException, JSONException {
+    
+    System.out.println("Fetching Papertrail system at " 
+        + System.getenv("CS_API_URL") + "....");
+    
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(
+        System.getenv("CS_API_URL") + "/squirrelforce/system/"
+            + participantId);
+    getRequest.setHeader(new BasicHeader("Authorization", 
+        "Token token=" + System.getenv("CS_API_KEY")));
+    getRequest.addHeader("accept", "application/json");
+    HttpResponse response = httpClient.execute(getRequest);
+    BufferedReader br = new BufferedReader(new InputStreamReader(
+        (response.getEntity().getContent())));
+    String output;
+    JSONObject payload = null;
+    
+    while ((output = br.readLine()) != null) {
+      payload = new JSONObject(output).getJSONObject("response");
+      break;
+    }
+    System.out.println(payload);
+    return payload;
+    
+  }  
 
 }

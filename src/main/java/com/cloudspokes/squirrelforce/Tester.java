@@ -2,10 +2,8 @@ package com.cloudspokes.squirrelforce;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -14,6 +12,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,6 +51,8 @@ public class Tester {
           System.out.println("done");
         } else if (Integer.parseInt(choice) == 3) {          
           writeLog4jXmlFile("logs.papertrailapp.com:24214");
+        } else if (Integer.parseInt(choice) == 4) {          
+          getPapertrailSystem("a0AK00000076XgBMAU");
         }
 
         showMenu();
@@ -75,9 +76,37 @@ public class Tester {
     System.out.println("\n1. Unzip to Git");
     System.out.println("2. Reserve server");
     System.out.println("3. Write Log4j File");
+    System.out.println("4. Get System");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");
+  }
+  
+  private void getPapertrailSystem(String participantId) 
+      throws ClientProtocolException, IOException, JSONException {
+    
+    System.out.println("Fetching Papertrail system at " 
+        + System.getenv("CS_API_URL") + "....");
+    
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(
+        System.getenv("CS_API_URL") + "/squirrelforce/system/"
+            + participantId);
+    getRequest.addHeader("accept", "application/json");
+    getRequest.setHeader(new BasicHeader("Authorization", "Token token=" + System.getenv("CS_API_KEY")));
+    HttpResponse response = httpClient.execute(getRequest);
+    BufferedReader br = new BufferedReader(new InputStreamReader(
+        (response.getEntity().getContent())));
+    String output;
+    JSONObject payload = null;
+    
+    while ((output = br.readLine()) != null) {
+      payload = new JSONObject(output).getJSONObject("response");
+      break;
+    }
+    System.out.println(payload.getString("syslog_hostname"));
+    System.out.println(payload.getInt("syslog_port"));
+    
   }
   
   private void writeLog4jXmlFile(String syslogHost) {
