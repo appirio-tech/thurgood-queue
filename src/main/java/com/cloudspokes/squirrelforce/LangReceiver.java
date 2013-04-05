@@ -145,8 +145,8 @@ public class LangReceiver implements Runnable {
     String file_name = "./src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties";
     FileWriter fstream = new FileWriter(file_name);
     BufferedWriter out = new BufferedWriter(fstream);
-    out.write("membername= " + membername + "\n");
-    out.write("challenge_id= " + challenge_id + "\n");
+    out.write("membername=" + membername + "\n");
+    out.write("challenge_id=" + challenge_id + "\n");
     out.close();
     System.out.println("Successfully wrote cloudspokes.properties");
     
@@ -189,7 +189,7 @@ public class LangReceiver implements Runnable {
   private JSONObject getSquirrelforceServer(String membername)
       throws ClientProtocolException, IOException, JSONException {
 
-    System.out.println("Reserving Squirrelforce server at " 
+    System.out.println("Reserving Thurgood server at " 
         + System.getenv("CS_API_URL") + "....");
     
     DefaultHttpClient httpClient = new DefaultHttpClient();
