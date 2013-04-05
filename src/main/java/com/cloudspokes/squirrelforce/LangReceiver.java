@@ -157,7 +157,7 @@ public class LangReceiver implements Runnable {
     PrintWriter out = null;
     String outputfile = "./src/main/webapp/WEB-INF/shells/apex/log4j.xml";
     try {
-        URL log4jTemplate = new URL("http://squirrelforce.herokuapp.com/log4j.xml");
+        URL log4jTemplate = new URL("http://cs-thurgood.s3.amazonaws.com/log4j.xml");
         File outFile = new File(outputfile);
         out = new PrintWriter(new FileWriter(outFile));
         // read the xml template in from the url
