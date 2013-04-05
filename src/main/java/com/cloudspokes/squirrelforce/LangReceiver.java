@@ -75,6 +75,7 @@ public class LangReceiver implements Runnable {
         String submissionUrl = jsonMessage.getString("url");
         String participantId = jsonMessage.getString("challenge_participant");
         String membername = jsonMessage.getString("membername");
+        int challenge_id = jsonMessage.getInt("challenge_id");
 
         // reserve a server and then use the configuration
         JSONObject server = getSquirrelforceServer(membername);
@@ -83,8 +84,11 @@ public class LangReceiver implements Runnable {
         
         // create the build.properties file in the shells dir
         writeApexBuildProperties(server);
+        // create the log4j file for papertrail
         writeLog4jXmlFile(papertrailSystem.getString("syslog_hostname"), 
             papertrailSystem.getInt("syslog_port"), participantId);
+        // create the properties files with challange specific info
+        writeCloudspokesProperties(membername, challenge_id);
 
         if (server != null) {
 
@@ -135,6 +139,18 @@ public class LangReceiver implements Runnable {
     System.out.println("Successfully wrote build.properties");
 
   }
+  
+  private void writeCloudspokesProperties(String membername, int challenge_id) throws IOException {
+    
+    String file_name = "./src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties";
+    FileWriter fstream = new FileWriter(file_name);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write("membername= " + membername + "\n");
+    out.write("challenge_id= " + challenge_id + "\n");
+    out.close();
+    System.out.println("Successfully wrote cloudspokes.properties");
+    
+  }  
   
   private void writeLog4jXmlFile(String hostname, int port, String participantId) {
   
