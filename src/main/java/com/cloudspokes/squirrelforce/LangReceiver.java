@@ -76,6 +76,10 @@ public class LangReceiver implements Runnable {
         String participantId = jsonMessage.getString("challenge_participant");
         String membername = jsonMessage.getString("membername");
         int challenge_id = jsonMessage.getInt("challenge_id");
+        
+        // if they didn't submit a ".zip" file then exit
+        if (!isAZipFile(submissionUrl))
+          return;
 
         // reserve a server and then use the configuration
         JSONObject server = getSquirrelforceServer(membername);
@@ -124,6 +128,21 @@ public class LangReceiver implements Runnable {
         }
       }
     }
+  }
+  
+  private boolean isAZipFile(String submissionUrl) {
+    
+    if (submissionUrl.lastIndexOf('.') > 0) {
+      String extension = submissionUrl.substring(submissionUrl.lastIndexOf('.')+1, submissionUrl.length());
+      if (extension == "zip") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+    
   }
 
   private void writeApexBuildProperties(JSONObject server) throws IOException,
