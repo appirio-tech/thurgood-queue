@@ -25,7 +25,7 @@ import org.eclipse.egit.github.core.service.RepositoryService;
  */
 public class MultiSourceCommitService {
 
-    private static final String DEFAULT_COMMIT_MSG = "Auto committed courtesy of Squirrelforce.";
+    private static final String DEFAULT_COMMIT_MSG = "Auto committed courtesy of Thurgood.";
 
     private static final String FILE_BLOB_TREE_ENTRY_TYPE = "blob";
     private static final String FILE_BLOB_TREE_ENTRY_MODE = "100644";
@@ -181,17 +181,17 @@ public class MultiSourceCommitService {
       return repo;
   }    
 
-    private Repository newRepo(String repoName, boolean isPrivate) throws IOException {
-        Repository repo = new InitializableRepository();
-        repo.setName(repoName);
-        repo.setPrivate(isPrivate);
-        if (this.organization != null) {
-            repo = this.repositoryService.createRepository(this.organization, repo);
-        } else {
-            repo = this.repositoryService.createRepository(repo);
-        }
-        return repo;
-    }
+//    private Repository newRepo(String repoName, boolean isPrivate) throws IOException {
+//        Repository repo = new InitializableRepository();
+//        repo.setName(repoName);
+//        repo.setPrivate(isPrivate);
+//        if (this.organization != null) {
+//            repo = this.repositoryService.createRepository(this.organization, repo);
+//        } else {
+//            repo = this.repositoryService.createRepository(repo);
+//        }
+//        return repo;
+//    }
 
     private TreeEntry newTextTreeEntry(Repository repo, String path, String content) throws IOException {
         return newTreeEntry(repo, path, content, Blob.ENCODING_UTF8);
