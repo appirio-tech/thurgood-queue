@@ -134,6 +134,7 @@ public class LangReceiver implements Runnable {
     
     if (submissionUrl.lastIndexOf('.') > 0) {
       String extension = submissionUrl.substring(submissionUrl.lastIndexOf('.')+1, submissionUrl.length());
+      System.out.println("Submission file extension: " +  extension);
       if (extension == "zip") {
         return true;
       } else {
