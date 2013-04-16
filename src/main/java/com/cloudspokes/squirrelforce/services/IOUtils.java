@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public class IOUtils {
         try {
             OutputStream outputStream = new FileOutputStream(tempFile);
             try {
-                copy(httpGet(url), outputStream);
+                copy(httpGet(URLEncoder.encode(url, "UTF-8")), outputStream);
                 return tempFile;
 
             } finally {
