@@ -40,6 +40,8 @@ public class IOUtils {
     }
 
     public static File downloadFromUrlToTempFile(String url) {
+        // replace any spaces with +
+        url = url.replace(" ", "+");
         File tempFile = new File(randomTempPath());
         try {
             OutputStream outputStream = new FileOutputStream(tempFile);
