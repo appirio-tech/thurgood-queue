@@ -45,7 +45,7 @@ public class Apex extends Thurgood {
   public void writeCloudspokesPropertiesFile() throws ProcessException {
     
     BufferedWriter out = null;
-    String file_name = SHELLS_DIRECTORY + "/apex/build.properties";
+    String file_name = SHELLS_DIRECTORY + "/apex/cloudspokes.properties";
     
     try {    
 
