@@ -1,23 +1,14 @@
 package com.cloudspokes.squirrelforce;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.URL;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.cloudspokes.squirrelforce.services.GitterUp;
+import com.cloudspokes.exception.ProcessException;
+import com.cloudspokes.thurgood.Thurgood;
+import com.cloudspokes.thurgood.ThurgoodFactory;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.QueueingConsumer;
@@ -68,49 +59,34 @@ public class LangReceiver implements Runnable {
         String routingKey = delivery.getEnvelope().getRoutingKey();
 
         System.out.println(" [x] Received in receiver: " + lang + "'"
-            + routingKey + "':'" + message + "'");
-
-        // parse the json
-        JSONObject jsonMessage = new JSONObject(message);
-        String submissionUrl = jsonMessage.getString("url");
-        String participantId = jsonMessage.getString("challenge_participant");
-        String membername = jsonMessage.getString("membername");
-        int challenge_id = jsonMessage.getInt("challenge_id");
+            + routingKey + "':'" + message + "'"); 
         
-        // if they didn't submit a ".zip" file then exit
-        if (!isAZipFile(submissionUrl))
-          return;
-
-        // reserve a server and then use the configuration
-        JSONObject server = getSquirrelforceServer(membername);
-        // get the participant's papertrail system info for the logger
-        JSONObject papertrailSystem = getPapertrailSystem(participantId);
-        
-        // create the build.properties file in the shells dir
-        writeApexBuildProperties(server);
-        // create the log4j file for papertrail
-        writeLog4jXmlFile(papertrailSystem.getString("syslog_hostname"), 
-            papertrailSystem.getInt("syslog_port"), participantId);
-        // create the properties files with challange specific info
-        writeCloudspokesProperties(membername, challenge_id);
-
-        if (server != null) {
-
-          System.out.println("Reserved Server: " + server.getString("name"));
-          System.out.println("Repo: " + server.getString("repo_name"));
-
-          System.out.println("Processing submission "
-              + jsonMessage.getString("name") + " with code from "
-              + submissionUrl);
-          System.out.println("Kicking off GitterUp...");
-
-          String results = GitterUp.unzipToGit(submissionUrl,
-              server.getString("repo_name"), langShellFolder);
+        try {
+          
+          // parse the json in the message
+          JSONObject jsonMessage = new JSONObject(message);
+          String submissionUrl = jsonMessage.getString("url");
+          String participantId = jsonMessage.getString("challenge_participant");
+          String memberName = jsonMessage.getString("membername");
+          int challengeId = jsonMessage.getInt("challenge_id");   
+          
+          // create a new processor by type of language
+          Thurgood t = new ThurgoodFactory().getTheJudge(lang);
+          // init, ensure zip file, reserve server & get papertrail system
+          t.init(challengeId, memberName, submissionUrl,participantId);
+          
+          // build the language type specific files
+          t.writeBuildPropertiesFile();          
+          t.writeCloudspokesPropertiesFile();
+          // push all of the files to github including the shells folder
+          String results = t.pushFilesToGit(langShellFolder);
           System.out.println(results);
-
-        } else {
-          System.out.println("Could not get a server");
-        }
+             
+        } catch (ProcessException e) {
+          System.out.println(e.getMessage());     
+        } catch (JSONException e) {
+          System.out.println(e.getMessage());            
+        }        
 
       }
     } catch (Exception e) {
@@ -129,146 +105,5 @@ public class LangReceiver implements Runnable {
       }
     }
   }
-  
-  private boolean isAZipFile(String submissionUrl) {
-    
-    if (submissionUrl.lastIndexOf('.') > 0) {
-      String extension = submissionUrl.substring(submissionUrl.lastIndexOf('.')+1, submissionUrl.length());
-      System.out.println("Submission file extension: " +  extension);
-      if (extension.equalsIgnoreCase("zip")) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-    
-  }
-
-  private void writeApexBuildProperties(JSONObject server) throws IOException,
-      JSONException {
-
-    String file_name = "./src/main/webapp/WEB-INF/shells/apex/build.properties";
-    FileWriter fstream = new FileWriter(file_name);
-    BufferedWriter out = new BufferedWriter(fstream);
-    out.write("sf.username = " + server.get("username") + "\n");
-    out.write("sf.password = " + server.get("password") + "\n");
-    out.write("sf.serverurl = " + server.get("instance_url"));
-    out.close();
-    System.out.println("Successfully wrote build.properties");
-
-  }
-  
-  private void writeCloudspokesProperties(String membername, int challenge_id) throws IOException {
-    
-    String file_name = "./src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties";
-    FileWriter fstream = new FileWriter(file_name);
-    BufferedWriter out = new BufferedWriter(fstream);
-    out.write("membername=" + membername + "\n");
-    out.write("challenge_id=" + challenge_id + "\n");
-    out.close();
-    System.out.println("Successfully wrote cloudspokes.properties");
-    
-  }  
-  
-  private void writeLog4jXmlFile(String hostname, int port, String participantId) {
-  
-    PrintWriter out = null;
-    String outputfile = "./src/main/webapp/WEB-INF/shells/apex/log4j.xml";
-    try {
-        URL log4jTemplate = new URL("http://cs-thurgood.s3.amazonaws.com/log4j.xml");
-        File outFile = new File(outputfile);
-        out = new PrintWriter(new FileWriter(outFile));
-        // read the xml template in from the url
-        BufferedReader reader = new BufferedReader(new InputStreamReader(log4jTemplate.openStream()));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            // check for replacements
-            if (line.indexOf("{{SYSLOGHOST}}",0) != -1)
-              line = line.replace("{{SYSLOGHOST}}", hostname + ":" + port);
-
-            if (line.indexOf("{{PARTICIPANT_ID}}",0) != -1)
-              line = line.replace("{{PARTICIPANT_ID}}", participantId);
-
-            out.write(line + "\r\n");
-        }
-
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-
-    } finally {
-      if (out != null) {
-        out.close();
-      }
-    }
-    System.out.println("Successfully wrote log4j.xml");
-  
-  }  
-
-  private JSONObject getSquirrelforceServer(String membername)
-      throws ClientProtocolException, IOException, JSONException {
-
-    System.out.println("Reserving Thurgood server at " 
-        + System.getenv("CS_API_URL") + "....");
-    
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet(
-        System.getenv("CS_API_URL") + "/squirrelforce/reserve_server?membername="
-            + membername);
-    getRequest.setHeader(new BasicHeader("Authorization", 
-        "Token token=" + System.getenv("CS_API_KEY")));
-    getRequest.addHeader("accept", "application/json");
-    HttpResponse response = httpClient.execute(getRequest);
-    BufferedReader br = new BufferedReader(new InputStreamReader(
-        (response.getEntity().getContent())));
-    String output;
-    JSONObject payload = null;
-    
-    while ((output = br.readLine()) != null) {
-      payload = new JSONObject(output).getJSONObject("response");
-      break;
-    }
-    httpClient.getConnectionManager().shutdown();
-
-    JSONObject server = null;
-
-    if (payload.getBoolean("success")) {
-      server = payload.getJSONObject("server");
-    } else {
-      System.out.println(payload.getString("message"));
-    }
-
-    return server;
-
-  }
-  
-  private JSONObject getPapertrailSystem(String participantId) 
-      throws ClientProtocolException, IOException, JSONException {
-    
-    System.out.println("Fetching Papertrail system at " 
-        + System.getenv("CS_API_URL") + "....");
-    
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet(
-        System.getenv("CS_API_URL") + "/squirrelforce/system/"
-            + participantId);
-    getRequest.setHeader(new BasicHeader("Authorization", 
-        "Token token=" + System.getenv("CS_API_KEY")));
-    getRequest.addHeader("accept", "application/json");
-    HttpResponse response = httpClient.execute(getRequest);
-    BufferedReader br = new BufferedReader(new InputStreamReader(
-        (response.getEntity().getContent())));
-    String output;
-    JSONObject payload = null;
-    
-    while ((output = br.readLine()) != null) {
-      payload = new JSONObject(output).getJSONObject("response");
-      break;
-    }
-    System.out.println(payload);
-    return payload;
-    
-  }  
 
 }
