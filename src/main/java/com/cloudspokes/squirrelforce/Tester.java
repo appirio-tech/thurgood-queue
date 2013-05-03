@@ -16,7 +16,10 @@ import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.cloudspokes.exception.ProcessException;
 import com.cloudspokes.squirrelforce.services.GitterUp;
+import com.cloudspokes.thurgood.Thurgood;
+import com.cloudspokes.thurgood.ThurgoodFactory;
 
 public class Tester {
 
@@ -53,6 +56,24 @@ public class Tester {
           writeLog4jXmlFile("logs.papertrailapp.com:24214");
         } else if (Integer.parseInt(choice) == 4) {          
           getPapertrailSystem("a0AK00000076XgBMAU");
+        } else if (Integer.parseInt(choice) == 5) {
+         
+          try {
+            
+            Thurgood t = new ThurgoodFactory().getTheJudge("APEX");
+            t.init(2, "jeffdonthemic", 
+                "https://s3.amazonaws.com/cs-test-jeff/challenges/2/jeffdonthemic/challenge-2.zip",
+                "a0AK00000076KTE");
+            
+            t.writeCloudspokesPropertiesFile();
+            t.writeBuildPropertiesFile();
+            String results = t.pushFilesToGit(new File("./src/main/webapp/WEB-INF/shells/apex"));
+            System.out.println(results);
+               
+          } catch (ProcessException e) {
+            System.out.println(e.getMessage());                        
+          }
+          
         }
 
         showMenu();
@@ -70,13 +91,14 @@ public class Tester {
       System.out.println(e.getMessage());
     }
 
-  }
+  } 
 
   private void showMenu() {
     System.out.println("\n1. Unzip to Git");
     System.out.println("2. Reserve server");
     System.out.println("3. Write Log4j File");
     System.out.println("4. Get System");
+    System.out.println("5. Call Apex Class");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");
@@ -137,6 +159,7 @@ public class Tester {
     }
   }
     
+  @SuppressWarnings("unused")
   private JSONObject getSquirrelforceServer(String membername)
       throws ClientProtocolException, IOException, JSONException {
 
