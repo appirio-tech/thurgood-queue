@@ -4,10 +4,13 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import com.cloudspokes.exception.ProcessException;
+
 public class GitterUp {
 
-  public static String unzipToGit(String zipUrl, String repoName, File shellFolder) {
+  public static String unzipToGit(String zipUrl, String repoName, File shellFolder) throws ProcessException {
 
+    System.out.println("Pusing files to github...");
     String results = "";
 
     MultiSourceCommitService commitService = new MultiSourceCommitService();
@@ -21,11 +24,12 @@ public class GitterUp {
     try {
       String repoUrl = commitService.commitFromFoldersToNewRepo(folders,
           repoName, false);
-      results = "committed to repo: " + repoUrl;
+      results = "Files successfully committed to repo: " + repoUrl;
 
     } catch (Exception e) {
-      results = "commitFromFoldersToNewRepo failed: " + e.getClass().getName()
+      results = "Error occurred in commitFromFoldersToNewRepo: " + e.getClass().getName()
           + " -  " + e.getMessage();
+      throw new ProcessException(results);
     } finally {
       sourceZip.delete();
       IOUtils.deleteDir(tempZipFolder);
