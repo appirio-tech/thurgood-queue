@@ -78,6 +78,7 @@ public class LangReceiver implements Runnable {
           // build the language type specific files
           t.writeBuildPropertiesFile();          
           t.writeCloudspokesPropertiesFile();
+          t.writeLog4jXmlFile();
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
           System.out.println(results);

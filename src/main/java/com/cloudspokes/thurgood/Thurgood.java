@@ -137,7 +137,7 @@ public abstract class Thurgood {
 
   }
 
-  protected void writeLog4jXmlFile() throws ProcessException {
+  public void writeLog4jXmlFile() throws ProcessException {
 
     PrintWriter out = null;
     String outputfile = SHELLS_DIRECTORY + "/" + submissionType + "/log4j.xml";
