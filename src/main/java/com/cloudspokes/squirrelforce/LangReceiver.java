@@ -57,6 +57,7 @@ public class LangReceiver implements Runnable {
         QueueingConsumer.Delivery delivery = consumer.nextDelivery();
         String message = new String(delivery.getBody());
         String routingKey = delivery.getEnvelope().getRoutingKey();
+        String jobId = null;
 
         System.out.println(" [x] Received in receiver: " + lang + "'"
             + routingKey + "':'" + message + "'"); 
@@ -65,7 +66,9 @@ public class LangReceiver implements Runnable {
           
           // parse the json in the message
           JSONObject jsonMessage = new JSONObject(message);
-          String jobId = jsonMessage.getString("job_id");
+          
+          if (jsonMessage.has("job_id"))
+            jobId = jsonMessage.getString("job_id");
           
           // create a new processor by type of language
           Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
