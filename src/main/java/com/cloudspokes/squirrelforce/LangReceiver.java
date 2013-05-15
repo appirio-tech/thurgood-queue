@@ -67,8 +67,12 @@ public class LangReceiver implements Runnable {
           // parse the json in the message
           JSONObject jsonMessage = new JSONObject(message);
           
+          System.out.println("has job_id?" + jsonMessage.has("job_id"));
+          
           if (jsonMessage.has("job_id"))
             jobId = jsonMessage.getString("job_id");
+          
+          System.out.println("job_id:" + jobId);
           
           // create a new processor by type of language
           Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
