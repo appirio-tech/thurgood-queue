@@ -73,6 +73,12 @@ public class Tester {
           } catch (ProcessException e) {
             System.out.println(e.getMessage());                        
           }
+
+        } else if (Integer.parseInt(choice) == 6) {          
+          
+          Thurgood t = new ThurgoodFactory().getTheJudge("APEX");
+          t.init("81b8472aeefcfd529868fd444f8a76ba");
+          System.out.println(t);
           
         }
 
@@ -99,6 +105,7 @@ public class Tester {
     System.out.println("3. Write Log4j File");
     System.out.println("4. Get System");
     System.out.println("5. Call Apex Class");
+    System.out.println("6. Get Job");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");

@@ -29,6 +29,7 @@ public abstract class Thurgood {
   int challengeId;
   Server server;
   PapertrailSystem papertrailSystem;
+  Job job;
 
   public void init(int challengeId, String memberName, String submissionUrl,
       String participantId) throws ProcessException {
@@ -42,6 +43,28 @@ public abstract class Thurgood {
     getPapertrailSystem();
 
   }
+  
+  public void init(String jobId) throws ProcessException {
+    try {
+
+      this.job = new Job(getJob(jobId));
+      this.submissionUrl = job.codeUrl;
+      this.memberName = job.userId; 
+
+      JSONObject options = new JSONObject(job.options);
+      this.participantId = options.getString("participant_id");
+      this.challengeId = options.getInt("challenge_id");      
+      
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error returning Thurgood job info. Could not parse JSON.");
+    }
+    
+    ensureZipFile();
+    getServer();
+    getLoggerSystem();
+
+  }  
 
   private void ensureZipFile() throws ProcessException {
 
@@ -56,6 +79,125 @@ public abstract class Thurgood {
     }
 
   }
+  
+  private JSONObject getJob(String jobId) throws ProcessException {
+
+    String output;
+    JSONObject job = null;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + jobId);
+    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    getRequest.addHeader("accept", "application/json");
+
+    try {
+
+      HttpResponse response = httpClient.execute(getRequest);
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      while ((output = br.readLine()) != null) {
+        job = new JSONObject(output).getJSONObject("response");
+        break;
+      }
+      httpClient.getConnectionManager().shutdown();
+      
+      return job;
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error returning Thurgood job info. Could not parse JSON.");
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood job info.");
+    }
+
+  }    
+  
+  private void getServer() throws ProcessException {
+
+    String output;
+    JSONObject s = null;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + this.job.jobId + "/server");
+    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    getRequest.addHeader("accept", "application/json");
+
+    try {
+
+      HttpResponse response = httpClient.execute(getRequest);
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      while ((output = br.readLine()) != null) {
+        s = new JSONObject(output).getJSONObject("response");
+        break;
+      }
+      httpClient.getConnectionManager().shutdown();
+      
+      server = new Server();
+      server.id = String.valueOf(s.getInt("id"));
+      server.platform = s.getString("platform");
+      server.username = s.getString("username");
+      server.supportedLanguages = s.getString("languages");
+      server.repoName = s.getString("repo_name");
+      server.instanceUrl = s.getString("instance_url");
+      server.password = s.getString("password");
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error returning Thurgood server info. Could not parse JSON.");
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood server info.");
+    }
+
+  }     
+  
+  private void getLoggerSystem() throws ProcessException {
+
+    String output;
+    JSONObject s = null;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + this.job.jobId + "/logger");
+    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    getRequest.addHeader("accept", "application/json");
+
+    try {
+
+      HttpResponse response = httpClient.execute(getRequest);
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      while ((output = br.readLine()) != null) {
+        s = new JSONObject(output).getJSONObject("response");
+        break;
+      }
+      httpClient.getConnectionManager().shutdown();
+      
+      papertrailSystem = new PapertrailSystem();
+      papertrailSystem.id = String.valueOf(s.getInt("id"));
+      papertrailSystem.syslogPort = s.getInt("syslog_port");
+      papertrailSystem.name = s.getString("name");
+      papertrailSystem.syslogHostName = s.getString("syslog_hostname");      
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error returning Thurgood logger info. Could not parse JSON.");
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood logger info.");
+    }
+
+  }       
 
   private void reserveServer() throws ProcessException {
 
@@ -192,6 +334,8 @@ public abstract class Thurgood {
     String installedServices;
     String password;
     String operatingSystem;
+    
+    Server() {}
 
     Server(JSONObject s) throws JSONException {
       this.id = s.getString("id");
@@ -211,6 +355,8 @@ public abstract class Thurgood {
     int syslogPort;
     String syslogHostName;
     String name;
+    
+    PapertrailSystem() {}
 
     PapertrailSystem(JSONObject s) throws JSONException {
       this.id = s.getString("id");
@@ -220,5 +366,25 @@ public abstract class Thurgood {
     }
 
   }
+  
+  protected class Job {
+
+    String jobId;
+    String codeUrl;
+    String language;
+    String platform;
+    String userId;
+    String options;
+    
+    Job(JSONObject j) throws JSONException {
+      this.jobId = j.getString("job_id");
+      this.codeUrl = j.getString("code_url");
+      this.language = j.getString("language");
+      this.platform = j.getString("platform");
+      this.userId = j.getString("user_id");
+      this.options = j.getString("options");
+    }
+
+  }  
 
 }

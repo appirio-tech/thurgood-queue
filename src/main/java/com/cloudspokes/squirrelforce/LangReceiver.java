@@ -65,15 +65,22 @@ public class LangReceiver implements Runnable {
           
           // parse the json in the message
           JSONObject jsonMessage = new JSONObject(message);
-          String submissionUrl = jsonMessage.getString("url");
-          String participantId = jsonMessage.getString("challenge_participant");
-          String memberName = jsonMessage.getString("membername");
-          int challengeId = jsonMessage.getInt("challenge_id");   
+          String jobId = jsonMessage.getString("job_id");
           
           // create a new processor by type of language
-          Thurgood t = new ThurgoodFactory().getTheJudge(lang);
-          // init, ensure zip file, reserve server & get papertrail system
-          t.init(challengeId, memberName, submissionUrl,participantId);
+          Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
+          
+          if (jobId != null) {
+            String submissionUrl = jsonMessage.getString("url");
+            String participantId = jsonMessage.getString("challenge_participant");
+            String memberName = jsonMessage.getString("membername");
+            int challengeId = jsonMessage.getInt("challenge_id"); 
+            
+            // init, ensure zip file, reserve server & get papertrail system
+            t.init(challengeId, memberName, submissionUrl,participantId);
+          } else {
+            t.init(jobId);
+          }
           
           // build the language type specific files
           t.writeBuildPropertiesFile();          
@@ -81,7 +88,7 @@ public class LangReceiver implements Runnable {
           t.writeLog4jXmlFile();
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
-          System.out.println(results);
+          System.out.println(results);          
              
         } catch (ProcessException e) {
           System.out.println(e.getMessage());     
