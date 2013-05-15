@@ -77,7 +77,7 @@ public class LangReceiver implements Runnable {
           // create a new processor by type of language
           Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
           
-          if (jobId != null) {
+          if (jobId == null) {
             String submissionUrl = jsonMessage.getString("url");
             String participantId = jsonMessage.getString("challenge_participant");
             String memberName = jsonMessage.getString("membername");
