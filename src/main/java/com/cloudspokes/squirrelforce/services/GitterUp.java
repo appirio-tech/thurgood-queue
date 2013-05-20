@@ -10,7 +10,7 @@ public class GitterUp {
 
   public static String unzipToGit(String zipUrl, String repoName, File shellFolder) throws ProcessException {
 
-    System.out.println("Pusing files to github...");
+    System.out.println("Pushing files to github...");
     String results = "";
 
     MultiSourceCommitService commitService = new MultiSourceCommitService();

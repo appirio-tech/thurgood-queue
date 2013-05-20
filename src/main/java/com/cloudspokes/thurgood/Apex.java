@@ -53,6 +53,7 @@ public class Apex extends Thurgood {
       out = new BufferedWriter(fstream);
       out.write("membername=" + memberName + "\n");
       out.write("challenge_id=" + challengeId + "\n");
+      out.write("job_id=" + job.jobId + "\n");
       System.out.println("Successfully wrote cloudspokes.properties");  
       
     } catch (IOException e) {

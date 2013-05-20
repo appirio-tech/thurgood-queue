@@ -30,19 +30,6 @@ public abstract class Thurgood {
   Server server;
   PapertrailSystem papertrailSystem;
   Job job;
-
-  public void init(int challengeId, String memberName, String submissionUrl,
-      String participantId) throws ProcessException {
-    this.submissionUrl = submissionUrl;
-    this.challengeId = challengeId;
-    this.memberName = memberName;
-    this.participantId = participantId;
-
-    ensureZipFile();
-    reserveServer();
-    getPapertrailSystem();
-
-  }
   
   public void init(String jobId) throws ProcessException {
     try {
@@ -198,86 +185,6 @@ public abstract class Thurgood {
     }
 
   }       
-
-  private void reserveServer() throws ProcessException {
-
-    System.out.println("Reserving Thurgood server at "
-        + System.getenv("CS_API_URL") + "....");
-
-    String output;
-    JSONObject payload = null;
-
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet(System.getenv("CS_API_URL")
-        + "/squirrelforce/reserve_server?membername=" + memberName);
-    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
-        + System.getenv("CS_API_KEY")));
-    getRequest.addHeader("accept", "application/json");
-
-    try {
-
-      HttpResponse response = httpClient.execute(getRequest);
-
-      BufferedReader br = new BufferedReader(new InputStreamReader(
-          (response.getEntity().getContent())));
-
-      while ((output = br.readLine()) != null) {
-        payload = new JSONObject(output).getJSONObject("response");
-        break;
-      }
-      httpClient.getConnectionManager().shutdown();
-
-      if (payload.getBoolean("success")) {
-        server = new Server(payload.getJSONObject("server"));
-      } else {
-        throw new ProcessException(
-            "No Thurgood server available to process the submission.");
-      }
-
-    } catch (JSONException e) {
-      throw new ProcessException(
-          "Error returning Thurgood server info. Could not parse JSON.");
-    } catch (IOException e) {
-      throw new ProcessException("IO Error processing Thurgood server info.");
-    }
-
-  }
-
-  private void getPapertrailSystem() throws ProcessException {
-
-    System.out.println("Fetching Papertrail system at "
-        + System.getenv("CS_API_URL") + "....");
-
-    String output;
-    DefaultHttpClient httpClient = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet(System.getenv("CS_API_URL")
-        + "/squirrelforce/system/" + participantId);
-    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
-        + System.getenv("CS_API_KEY")));
-    getRequest.addHeader("accept", "application/json");
-
-    try {
-
-      HttpResponse response = httpClient.execute(getRequest);
-      BufferedReader br = new BufferedReader(new InputStreamReader(
-          (response.getEntity().getContent())));
-
-      while ((output = br.readLine()) != null) {
-        papertrailSystem = new PapertrailSystem(
-            new JSONObject(output).getJSONObject("response"));
-        break;
-      }
-
-    } catch (IOException e) {
-      throw new ProcessException(
-          "IO error finding Papertrail log sender for participant. "
-              + e.getMessage());
-    } catch (JSONException e) {
-      throw new ProcessException(
-          "Could not find Papertrail log sender for participant.");
-    }
-
-  }
 
   public void writeLog4jXmlFile() throws ProcessException {
 

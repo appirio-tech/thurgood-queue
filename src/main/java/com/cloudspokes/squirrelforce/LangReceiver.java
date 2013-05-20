@@ -65,31 +65,18 @@ public class LangReceiver implements Runnable {
         try {
           
           // parse the json in the message
-          JSONObject jsonMessage = new JSONObject(message);
-          
-          // see if they are submitting from thurgood
-          if (jsonMessage.has("job_id"))
-            jobId = jsonMessage.getString("job_id");
+          JSONObject jsonMessage = new JSONObject(message);          
+          jobId = jsonMessage.getString("job_id");
           
           // create a new processor by type of language
           Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
-          
-          if (jobId == null) {
-            String submissionUrl = jsonMessage.getString("url");
-            String participantId = jsonMessage.getString("challenge_participant");
-            String memberName = jsonMessage.getString("membername");
-            int challengeId = jsonMessage.getInt("challenge_id"); 
-            
-            // init, ensure zip file, reserve server & get papertrail system
-            t.init(challengeId, memberName, submissionUrl,participantId);
-          } else {
-            t.init(jobId);
-          }
+          t.init(jobId);
           
           // build the language type specific files
           t.writeBuildPropertiesFile();          
           t.writeCloudspokesPropertiesFile();
           t.writeLog4jXmlFile();
+          
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
           System.out.println(results);          
