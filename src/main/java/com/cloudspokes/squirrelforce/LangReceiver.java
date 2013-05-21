@@ -79,14 +79,12 @@ public class LangReceiver implements Runnable {
           t.writeCloudspokesPropertiesFile();
           t.writeLog4jXmlFile();
           
-          t.sendMessageToLogger("Pusing files, assets, jars, etc. to git repo....");
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
           System.out.println(results); 
           t.sendMessageToLogger(results);
              
         } catch (ProcessException e) {
-          t.sendMessageToLogger(e.getMessage());
           System.out.println(e.getMessage());     
         } catch (JSONException e) {
           System.out.println(e.getMessage());            

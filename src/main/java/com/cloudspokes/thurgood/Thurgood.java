@@ -46,7 +46,7 @@ public abstract class Thurgood {
       
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood job info. Could not parse JSON.");
+          "Error returning Thurgood job options info. Could not parse JSON for options. Not found.");
     }
     
     System.out.println("Processing job: " + job.jobId);
@@ -235,6 +235,7 @@ public abstract class Thurgood {
   }
 
   public String pushFilesToGit(File langShellFolder) {
+    sendMessageToLogger("Pusing files, assets, jars, etc. to git repo....");
     return GitterUp.unzipToGit(submissionUrl, server.repoName, langShellFolder);
   }
   
