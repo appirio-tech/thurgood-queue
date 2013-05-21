@@ -62,6 +62,8 @@ public class LangReceiver implements Runnable {
         System.out.println(" [x] Received in receiver: " + lang + "'"
             + routingKey + "':'" + message + "'"); 
         
+        Thurgood t = null;
+        
         try {
           
           // parse the json in the message
@@ -69,7 +71,7 @@ public class LangReceiver implements Runnable {
           jobId = jsonMessage.getString("job_id");
           
           // create a new processor by type of language
-          Thurgood t = new ThurgoodFactory().getTheJudge(lang);          
+          t = new ThurgoodFactory().getTheJudge(lang);          
           t.init(jobId);
           
           // build the language type specific files
@@ -77,11 +79,14 @@ public class LangReceiver implements Runnable {
           t.writeCloudspokesPropertiesFile();
           t.writeLog4jXmlFile();
           
+          t.sendMessageToLogger("Pusing files, assets, jars, etc. to git repo....");
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
-          System.out.println(results);          
+          System.out.println(results); 
+          t.sendMessageToLogger(results);
              
         } catch (ProcessException e) {
+          t.sendMessageToLogger(e.getMessage());
           System.out.println(e.getMessage());     
         } catch (JSONException e) {
           System.out.println(e.getMessage());            

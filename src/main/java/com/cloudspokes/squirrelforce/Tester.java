@@ -11,11 +11,14 @@ import java.net.URL;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.cloudspokes.exception.ProcessException;
 import com.cloudspokes.squirrelforce.services.GitterUp;
 import com.cloudspokes.thurgood.Thurgood;
 import com.cloudspokes.thurgood.ThurgoodFactory;
@@ -56,7 +59,7 @@ public class Tester {
         } else if (Integer.parseInt(choice) == 4) {          
           getPapertrailSystem("a0AK00000076XgBMAU");
         } else if (Integer.parseInt(choice) == 5) {
-        
+          sendMessage("1f69e4efcd1fd5d451c44d5f7a0de586","my message!!");
 
         } else if (Integer.parseInt(choice) == 6) {          
           
@@ -88,12 +91,58 @@ public class Tester {
     System.out.println("2. Reserve server");
     System.out.println("3. Write Log4j File");
     System.out.println("4. Get System");
-    System.out.println("5. Call Apex Class");
+    System.out.println("5. Send Message");
     System.out.println("6. Get Job");
     System.out.println("99. Exit");
     System.out.println(" ");
     System.out.println("Operation: ");
   }
+  
+  protected void sendMessage(String jobId, String text) {
+
+    String output;
+    JSONObject results = null;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpPost postRequest = new HttpPost(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + jobId + "/message");
+    postRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    postRequest.addHeader("content-type", "application/json");
+    postRequest.addHeader("accept", "application/json");
+    
+    try {
+      
+      JSONObject keyArgs = new JSONObject();
+      keyArgs.put("text", text);
+      keyArgs.put("sender", "thurgood-queue");
+      
+      JSONObject msgArg = new JSONObject();
+      msgArg.put("message", keyArgs);
+      StringEntity input = new StringEntity(msgArg.toString());
+      postRequest.setEntity(input);
+
+      HttpResponse response = httpClient.execute(postRequest);
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      while ((output = br.readLine()) != null) {
+        results = new JSONObject(output);
+        break;
+      }
+      httpClient.getConnectionManager().shutdown();  
+      
+      if (!results.getString("response").equals("true")) throw new ProcessException("Error sending message! Not Sent."); 
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error sending message. Could not parse JSON.");
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood logger info.");     
+    }    
+    
+  }  
   
   private void getPapertrailSystem(String participantId) 
       throws ClientProtocolException, IOException, JSONException {

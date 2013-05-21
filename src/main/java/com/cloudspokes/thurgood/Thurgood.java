@@ -10,6 +10,8 @@ import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.json.JSONException;
@@ -47,6 +49,9 @@ public abstract class Thurgood {
           "Error returning Thurgood job info. Could not parse JSON.");
     }
     
+    System.out.println("Processing job: " + job.jobId);
+    sendMessageToLogger("Processing language specific job for Thurgood queue.");
+    
     ensureZipFile();
     getServer();
     getLoggerSystem();
@@ -59,8 +64,10 @@ public abstract class Thurgood {
       String extension = submissionUrl.substring(
           submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
       System.out.println("Submission file extension: " + extension);
-      if (!extension.equalsIgnoreCase("zip"))
+      if (!extension.equalsIgnoreCase("zip")) {
+        sendMessageToLogger("Unsupported file type: " + extension);
         throw new ProcessException("Unsupported file type: " + extension);
+      }
     } else {
       throw new ProcessException("Unsupported file type: Unknown");
     }
@@ -136,6 +143,8 @@ public abstract class Thurgood {
       server.repoName = s.getString("repo_name");
       server.instanceUrl = s.getString("instance_url");
       server.password = s.getString("password");
+      
+      sendMessageToLogger("Successfully fetched Thurgood testing server info.");
 
     } catch (JSONException e) {
       throw new ProcessException(
@@ -175,7 +184,9 @@ public abstract class Thurgood {
       papertrailSystem.id = String.valueOf(s.getInt("id"));
       papertrailSystem.syslogPort = s.getInt("syslog_port");
       papertrailSystem.name = s.getString("name");
-      papertrailSystem.syslogHostName = s.getString("syslog_hostname");      
+      papertrailSystem.syslogHostName = s.getString("syslog_hostname"); 
+      
+      sendMessageToLogger("Successfully fetched Papertrail logger info.");
 
     } catch (JSONException e) {
       throw new ProcessException(
@@ -211,6 +222,7 @@ public abstract class Thurgood {
         out.write(line + "\r\n");
       }
       System.out.println("Successfully wrote log4j.xml");
+      sendMessageToLogger("Successfully wrote log4j.xml to attach logger to Papertrail.");
 
     } catch (IOException e) {
       throw new ProcessException("IO Error creating log4j xml file.");
@@ -225,10 +237,56 @@ public abstract class Thurgood {
   public String pushFilesToGit(File langShellFolder) {
     return GitterUp.unzipToGit(submissionUrl, server.repoName, langShellFolder);
   }
+  
+  public void sendMessageToLogger(String text) {
 
+    String output;
+    JSONObject results = null;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpPost postRequest = new HttpPost(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + this.job.jobId + "/message");
+    postRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    postRequest.addHeader("content-type", "application/json");
+    postRequest.addHeader("accept", "application/json");
+    
+    try {
+      
+      JSONObject keyArgs = new JSONObject();
+      keyArgs.put("text", text);
+      keyArgs.put("sender", "thurgood-queue");
+      
+      JSONObject msgArg = new JSONObject();
+      msgArg.put("message", keyArgs);
+      StringEntity input = new StringEntity(msgArg.toString());
+      postRequest.setEntity(input);
+
+      HttpResponse response = httpClient.execute(postRequest);
+
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      while ((output = br.readLine()) != null) {
+        results = new JSONObject(output);
+        break;
+      }
+      httpClient.getConnectionManager().shutdown();  
+      
+      if (!results.getString("response").equals("true")) throw new ProcessException("Error sending message! Not Sent."); 
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error sending message. Could not parse JSON.");
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood logger info.");     
+    }    
+    
+  }
+  
   public abstract void writeCloudspokesPropertiesFile() throws ProcessException;
 
-  public abstract void writeBuildPropertiesFile() throws ProcessException;
+  public abstract void writeBuildPropertiesFile() throws ProcessException;  
 
   protected class Server {
 

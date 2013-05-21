@@ -26,6 +26,7 @@ public class Apex extends Thurgood {
       out.write("sf.password = " + server.password + "\n");
       out.write("sf.serverurl = " + server.instanceUrl);
       System.out.println("Successfully wrote build.properties");
+      sendMessageToLogger("Successfully wrote build.properties for Apex deployment.");
     
     } catch (IOException e) {
         throw new ProcessException("IO Error creating build.properties file.");
@@ -54,7 +55,8 @@ public class Apex extends Thurgood {
       out.write("membername=" + memberName + "\n");
       out.write("challenge_id=" + challengeId + "\n");
       out.write("job_id=" + job.jobId + "\n");
-      System.out.println("Successfully wrote cloudspokes.properties");  
+      out.write("api_key=" + System.getenv("THURGOOD_API_KEY"));
+      System.out.println("Successfully wrote cloudspokes.properties"); 
       
     } catch (IOException e) {
       throw new ProcessException("IO Error creating cloudspokes.properties file.");
