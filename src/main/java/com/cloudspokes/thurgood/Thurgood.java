@@ -184,6 +184,7 @@ public abstract class Thurgood {
       papertrailSystem.id = String.valueOf(s.getInt("id"));
       papertrailSystem.syslogPort = s.getInt("syslog_port");
       papertrailSystem.name = s.getString("name");
+      papertrailSystem.papertrailId = s.getString("papertrail_id");
       papertrailSystem.syslogHostName = s.getString("syslog_hostname"); 
       
       sendMessageToLogger("Successfully fetched Papertrail logger info.");
@@ -218,7 +219,7 @@ public abstract class Thurgood {
 
         // use the id of the system instead of the participantId
         if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
-          line = line.replace("{{PARTICIPANT_ID}}", papertrailSystem.id);
+          line = line.replace("{{PARTICIPANT_ID}}", papertrailSystem.papertrailId);
 
         out.write(line + "\r\n");
       }
@@ -322,6 +323,7 @@ public abstract class Thurgood {
     int syslogPort;
     String syslogHostName;
     String name;
+    String papertrailId;
     
     PapertrailSystem() {}
 
@@ -329,6 +331,7 @@ public abstract class Thurgood {
       this.id = s.getString("id");
       this.syslogPort = s.getInt("syslog_port");
       this.name = s.getString("name");
+      this.papertrailId = s.getString("papertrail_id");
       this.syslogHostName = s.getString("syslog_hostname");
     }
 
