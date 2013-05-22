@@ -216,8 +216,9 @@ public abstract class Thurgood {
           line = line.replace("{{SYSLOGHOST}}", papertrailSystem.syslogHostName
               + ":" + papertrailSystem.syslogPort);
 
+        // use the id of the system instead of the participantId
         if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
-          line = line.replace("{{PARTICIPANT_ID}}", participantId);
+          line = line.replace("{{PARTICIPANT_ID}}", papertrailSystem.id);
 
         out.write(line + "\r\n");
       }
