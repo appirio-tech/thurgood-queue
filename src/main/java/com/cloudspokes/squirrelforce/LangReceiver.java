@@ -85,19 +85,19 @@ public class LangReceiver implements Runnable {
           t.sendMessageToLogger(results);
              
         } catch (ProcessException e) {
-          System.out.println(e.getMessage());     
+          System.out.println("[FATAL] " + e.getMessage());     
         } catch (JSONException e) {
-          System.out.println(e.getMessage());            
+          System.out.println("[FATAL] " +e.getMessage());            
         }        
 
       }
     } catch (Exception e) {
       System.out
-          .println("******************* Lang Processor failed *******************");
+          .println("[FATAL] Lang Processor failed");
       e.printStackTrace();
     } finally {
       System.out
-          .println("******************* Releasing resources *******************");
+          .println("[FATAL] Exception releasing resources");
       if (receiveChannel != null) {
         try {
           receiveChannel.close();

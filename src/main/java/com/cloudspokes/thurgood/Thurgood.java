@@ -46,7 +46,7 @@ public abstract class Thurgood {
       
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood job options info. Could not parse JSON for options. Not found.");
+          "Error returning Thurgood job options info. Could not parse JSON for options. Not found: " + e.getMessage());
     }
     
     System.out.println("Processing job: " + job.jobId);
@@ -103,9 +103,9 @@ public abstract class Thurgood {
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood job info. Could not parse JSON.");
+          "Error returning Thurgood job info. Could not parse JSON: " + e.getMessage());
     } catch (IOException e) {
-      throw new ProcessException("IO Error processing Thurgood job info.");
+      throw new ProcessException("IO Error processing Thurgood job info: " + e.getMessage());
     }
 
   }    
@@ -148,9 +148,9 @@ public abstract class Thurgood {
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood server info. Could not parse JSON.");
+          "Error returning Thurgood server info. Could not parse JSON: " + e.getMessage());
     } catch (IOException e) {
-      throw new ProcessException("IO Error processing Thurgood server info.");
+      throw new ProcessException("IO Error processing Thurgood server info: " + e.getMessage());
     }
 
   }     
