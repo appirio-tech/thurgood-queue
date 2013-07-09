@@ -112,7 +112,7 @@ public abstract class Thurgood {
   
   private void getServer() throws ProcessException {
 
-    String output;
+    String output = null;
     JSONObject s = null;
 
     DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -148,7 +148,7 @@ public abstract class Thurgood {
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood server info. Could not parse JSON: " + e.getMessage());
+          "Error returning Thurgood server info. Could not parse JSON ( "+ output + "): " + e.getMessage());
     } catch (IOException e) {
       throw new ProcessException("IO Error processing Thurgood server info: " + e.getMessage());
     }
