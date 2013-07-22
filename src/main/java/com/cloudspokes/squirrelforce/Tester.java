@@ -64,7 +64,7 @@ public class Tester {
         } else if (Integer.parseInt(choice) == 6) {          
           
           Thurgood t = new ThurgoodFactory().getTheJudge("APEX");
-          t.init("1f69e4efcd1fd5d451c44d5f7a0de586");
+          t.init("560fac4f111a7f121a1dd42c2ff4ac9c");
           System.out.println(t);
           
         }

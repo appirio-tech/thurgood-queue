@@ -51,8 +51,15 @@ public class Java extends Thurgood {
 
       FileWriter fstream = new FileWriter(file_name);
       out = new BufferedWriter(fstream);
-      out.write("membername=" + memberName + "\n");
-      out.write("challenge_id=" + challengeId + "\n");
+      if (memberName != null) {
+        out.write("membername=" + memberName + "\n");
+        out.write("challenge_id=" + challengeId + "\n");        
+        out.write("s3_bucket=" + challengeId + '/' + memberName + "\n");
+      } else {
+        out.write("s3_bucket=" + job.jobId + "\n");
+      }   
+      out.write("job_id=" + job.jobId + "\n");
+      out.write("api_key=" + System.getenv("THURGOOD_API_KEY"));      
       System.out.println("Successfully wrote cloudspokes.properties");  
       
     } catch (IOException e) {
