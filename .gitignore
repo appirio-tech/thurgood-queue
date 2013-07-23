@@ -4,3 +4,6 @@
 .springBeans
 target
 .DS_Store
+
+src/main/java/com/cloudspokes/thurgood/ThurgoodTestChallenge.java
+src/main/java/com/cloudspokes/thurgood/ThurgoodTestJob.java
