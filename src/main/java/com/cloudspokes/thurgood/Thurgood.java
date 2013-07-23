@@ -35,19 +35,23 @@ public abstract class Thurgood {
   
   public void init(String jobId) throws ProcessException {
     try {
-
       this.job = new Job(getJob(jobId));
       this.submissionUrl = job.codeUrl;
-      this.memberName = job.userId; 
-
-      JSONObject options = new JSONObject(job.options);
-      this.participantId = options.getString("participant_id");
-      this.challengeId = options.getInt("challenge_id");      
-      
+      this.memberName = job.userId;  
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood job options info. Could not parse JSON for options. Not found: " + e.getMessage());
+          "Error returning Thurgood job: " + e.getMessage());
     }
+    
+    // try and find any options that may exist
+    try {
+      JSONObject options = new JSONObject(job.options);
+      this.participantId = options.getString("participant_id");
+      this.challengeId = options.getInt("challenge_id");            
+    } catch (JSONException e) {
+      System.out.println(
+          "Could not find any Thurgood job options for this job (not an error): " + e.getMessage());
+    }    
     
     System.out.println("Processing job: " + job.jobId);
     sendMessageToLogger("Processing language specific job for Thurgood queue.");
@@ -202,6 +206,7 @@ public abstract class Thurgood {
 
     PrintWriter out = null;
     String outputfile = SHELLS_DIRECTORY + "/" + submissionType + "/log4j.xml";
+
     try {
       URL log4jTemplate = new URL(
           "http://cs-thurgood.s3.amazonaws.com/log4j.xml");

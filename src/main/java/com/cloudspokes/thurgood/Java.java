@@ -45,19 +45,19 @@ public class Java extends Thurgood {
   public void writeCloudspokesPropertiesFile() throws ProcessException {
     
     BufferedWriter out = null;
-    String file_name = SHELLS_DIRECTORY + "/java/build.properties";
+    String file_name = SHELLS_DIRECTORY + "/java/cloudspokes.properties";
     
     try {    
 
       FileWriter fstream = new FileWriter(file_name);
       out = new BufferedWriter(fstream);
-      if (memberName != null) {
-        out.write("membername=" + memberName + "\n");
+      if (challengeId > 0) {
         out.write("challenge_id=" + challengeId + "\n");        
         out.write("s3_bucket=" + challengeId + '/' + memberName + "\n");
-      } else {
+      } else {      
         out.write("s3_bucket=" + job.jobId + "\n");
-      }   
+      }
+      out.write("membername=" + memberName + "\n");        
       out.write("job_id=" + job.jobId + "\n");
       out.write("api_key=" + System.getenv("THURGOOD_API_KEY"));      
       System.out.println("Successfully wrote cloudspokes.properties");  

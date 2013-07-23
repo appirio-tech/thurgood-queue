@@ -1,10 +1,14 @@
 package com.cloudspokes.thurgood;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -15,20 +19,19 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.cloudspokes.exception.ProcessException;
 
-public class ThurgoodTest {
+public class ThurgoodTestChallenge {
 
   private static String jobId = null;
   private static String codeUrl = "http://www.myfiles.com/code.zip";
   private static String language = "Apex";
   private static String platform = "Salesforce.com";
-  private static String userId = "jeff-test";
-  private static String email = "jeff@cloudspokes.com";  
+  private static String userId = "jeffdonthemic";
+  private static String email = "jdouglas@appirio.com";  
   private static String systemPapertrailId = "jeffdouglas-junit";  
   private static String challengeId = "2001";  
   private static String participantId = "a0IK00000058lO8";  
@@ -50,7 +53,33 @@ public class ThurgoodTest {
     
     // check the logger
     assertNotNull(t.papertrailSystem);
-    assertEquals(systemPapertrailId, t.papertrailSystem.papertrailId);    
+    assertEquals(systemPapertrailId, t.papertrailSystem.papertrailId);  
+    
+    t.writeLog4jXmlFile();
+    File log4j = new File("./src/main/webapp/WEB-INF/shells/apex/log4j.xml");
+    assertEquals(true, log4j.exists());
+    
+    t.writeBuildPropertiesFile();
+    File buildFile = new File("./src/main/webapp/WEB-INF/shells/apex/build.properties");
+    assertEquals(true, buildFile.exists());  
+    
+    t.writeCloudspokesPropertiesFile();
+    File cloudspokesFile = new File("./src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties");
+    assertEquals(true, cloudspokesFile.exists());     
+    // make sure the values are correct
+    Properties cloudspokesProp = new Properties();
+    try {
+      //load a properties file
+      cloudspokesProp.load(new FileInputStream("./src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties"));
+      // make sure the values were set correctly
+      assertEquals(challengeId+"/"+userId, cloudspokesProp.getProperty("s3_bucket"));
+      assertEquals(userId, cloudspokesProp.getProperty("membername"));
+      assertEquals(jobId, cloudspokesProp.getProperty("job_id"));
+      assertEquals(System.getenv("THURGOOD_API_KEY"), cloudspokesProp.getProperty("api_key"));
+      assertEquals(challengeId, cloudspokesProp.getProperty("challenge_id"));
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }     
     
   }  
   
@@ -144,10 +173,6 @@ public class ThurgoodTest {
       throw new ProcessException("IO Error processing Thurgood info.");     
     }       
     
-  }
-
-  @Before
-  public void setUp() throws Exception {
   }
   
   @AfterClass
