@@ -12,7 +12,7 @@
   <appender name="syslog" class="org.apache.log4j.net.SyslogAppender"> 
     <param name="Facility" value="LOCAL7"/>
     <param name="SyslogHost" value="{{SYSLOGHOST}}"/>
-    <layout class="org.apache.log4j.PatternLayout"> 
+    <layout class="cl.huerta.log4j.StackTracePatternLayout"> 
       <param name="ConversionPattern" value="%d{MMM dd HH:mm:ss} {{PARTICIPANT_ID}} jenkins: %c{2} %x %m %n"/>
     </layout> 
   </appender>
