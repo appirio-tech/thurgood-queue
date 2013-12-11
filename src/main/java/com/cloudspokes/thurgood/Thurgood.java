@@ -321,7 +321,7 @@ public abstract class Thurgood {
           submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
       System.out.println("Submission file extension: " + extension);
       if (!extension.equalsIgnoreCase("zip")) {
-        sendMessageToLogger("Unsupported file type: " + extension);
+        sendMessageToLogger("Cannot process code. Unsupported file type: " + extension + ". Only .zip files are supported.");
         throw new ProcessException("Unsupported file type: " + extension);
       }
     } else {
