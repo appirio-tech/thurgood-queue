@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -14,6 +16,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,60 +30,40 @@ public abstract class Thurgood {
   String submissionType;
   String submissionUrl;
   String participantId;
-  String memberName;
+  String handle;
   int challengeId;
   Server server;
   PapertrailSystem papertrailSystem;
   Job job;
-  
+
   public void init(String jobId) throws ProcessException {
     try {
       this.job = new Job(getJob(jobId));
       this.submissionUrl = job.codeUrl;
-      this.memberName = job.userId;  
+      this.handle = job.handle;
     } catch (JSONException e) {
-      throw new ProcessException(
-          "Error returning Thurgood job: " + e.getMessage());
+      throw new ProcessException("Error returning Thurgood job: "
+          + e.getMessage());
     }
-    
-    // try and find any options that may exist
-    try {
-      JSONObject options = new JSONObject(job.options);
-      this.participantId = options.getString("participant_id");
-      this.challengeId = options.getInt("challenge_id");            
-    } catch (JSONException e) {
-      System.out.println(
-          "Could not find any Thurgood job options for this job (not an error): " + e.getMessage());
-    }    
-    
+
+    // try and find any supported options that may exist
+    if (job.options != null) {
+      this.participantId = job.options.optString("participant_id", "");
+      this.challengeId = job.options.optInt("challenge_id", 0);
+    }
+
     System.out.println("Processing job: " + job.jobId);
     sendMessageToLogger("Processing language specific job for Thurgood queue.");
-    
+
     ensureZipFile();
     getServer();
-    getLoggerSystem();
-
-  }  
-
-  private void ensureZipFile() throws ProcessException {
-
-    if (submissionUrl.lastIndexOf('.') > 0) {
-      String extension = submissionUrl.substring(
-          submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
-      System.out.println("Submission file extension: " + extension);
-      if (!extension.equalsIgnoreCase("zip")) {
-        sendMessageToLogger("Unsupported file type: " + extension);
-        throw new ProcessException("Unsupported file type: " + extension);
-      }
-    } else {
-      throw new ProcessException("Unsupported file type: Unknown");
-    }
+    getLoggerSystem();    
 
   }
-  
+
   private JSONObject getJob(String jobId) throws ProcessException {
 
-    String output;
+    String line;
     JSONObject job = null;
 
     DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -92,115 +75,149 @@ public abstract class Thurgood {
 
     try {
 
+      StringBuilder jsonString = new StringBuilder();
       HttpResponse response = httpClient.execute(getRequest);
 
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (response.getEntity().getContent())));
 
-      while ((output = br.readLine()) != null) {
-        job = new JSONObject(output).getJSONObject("response");
-        break;
+      // build the json into a string
+      while ((line = br.readLine()) != null) {
+        jsonString.append(line);
       }
-      httpClient.getConnectionManager().shutdown();
-      
+
+      // parse the string into a json object
+      JSONObject json = new JSONObject(jsonString.toString());
+      if (json.getBoolean("success")) {
+        JSONArray data = json.getJSONArray("data");
+        job = new JSONObject(data.get(0).toString());
+      } else {
+        throw new Exception("Failure fetching Job.");
+      }
+
       return job;
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood job info. Could not parse JSON: " + e.getMessage());
+          "Error returning Thurgood job info. Could not parse JSON: "
+              + e.getMessage());
     } catch (IOException e) {
-      throw new ProcessException("IO Error processing Thurgood job info: " + e.getMessage());
+      throw new ProcessException("IO Error processing Thurgood job info: "
+          + e.getMessage());
+    } catch (Exception e) {
+      throw new ProcessException(e.getMessage());
+    } finally {
+      httpClient.getConnectionManager().shutdown();
     }
 
-  }    
-  
+  }
+
   private void getServer() throws ProcessException {
 
-    String output = null;
-    JSONObject s = null;
-
+    String line;
     DefaultHttpClient httpClient = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
-        + "/jobs/" + this.job.jobId + "/server");
-    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
-        + System.getenv("THURGOOD_API_KEY")));
-    getRequest.addHeader("accept", "application/json");
+    String q = "{\"jobId\":\"" + this.job.jobId + "\"}";
 
     try {
 
+      HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
+          + "/servers?q=" + URLEncoder.encode(q, "UTF-8"));
+      getRequest.setHeader(new BasicHeader("Authorization", "Token token="
+          + System.getenv("THURGOOD_API_KEY")));
+      getRequest.addHeader("accept", "application/json");
+
+      StringBuilder jsonString = new StringBuilder();
       HttpResponse response = httpClient.execute(getRequest);
 
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (response.getEntity().getContent())));
 
-      while ((output = br.readLine()) != null) {
-        s = new JSONObject(output).getJSONObject("response");
-        break;
+      // build the json into a string
+      while ((line = br.readLine()) != null) {
+        jsonString.append(line);
       }
-      httpClient.getConnectionManager().shutdown();
-      
-      server = new Server();
-      server.id = String.valueOf(s.getInt("id"));
-      server.platform = s.getString("platform");
-      server.username = s.getString("username");
-      server.supportedLanguages = s.getString("languages");
-      server.repoName = s.getString("repo_name");
-      server.instanceUrl = s.getString("instance_url");
-      server.password = s.getString("password");
-      
-      sendMessageToLogger("Successfully fetched Thurgood testing server info.");
+
+      // parse the string into a json object
+      JSONObject json = new JSONObject(jsonString.toString());
+      // get the actual data
+      JSONArray data = json.getJSONArray("data");
+
+      if (json.getBoolean("success")) {
+        // if there is actually a server assigned for the job
+        if (data.length() > 0) {
+          server = new Server(new JSONObject(data.get(0).toString()));
+          sendMessageToLogger("Successfully fetched Thurgood testing server info.");
+        }
+      } else {
+        throw new Exception("Failure fetching Server.");
+      }
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error returning Thurgood server info. Could not parse JSON ( "+ output + "): " + e.getMessage());
+          "Error returning Thurgood server info. Could not parse JSON:" + e.getMessage());
     } catch (IOException e) {
-      throw new ProcessException("IO Error processing Thurgood server info: " + e.getMessage());
+      throw new ProcessException("IO Error processing Thurgood server info: "
+          + e.getMessage());
+    } catch (Exception e) {
+      throw new ProcessException(e.getMessage());
+    } finally {
+      httpClient.getConnectionManager().shutdown();
     }
 
-  }     
-  
-  private void getLoggerSystem() throws ProcessException {
+  }
 
-    String output;
-    JSONObject s = null;
+  private void getLoggerSystem() throws ProcessException {
+    
+    if (this.job.loggerId == null) { return; }
+
+    String line;
 
     DefaultHttpClient httpClient = new DefaultHttpClient();
     HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
-        + "/jobs/" + this.job.jobId + "/logger");
+        + "/loggers/" + this.job.loggerId);
     getRequest.setHeader(new BasicHeader("Authorization", "Token token="
         + System.getenv("THURGOOD_API_KEY")));
     getRequest.addHeader("accept", "application/json");
 
     try {
 
+      StringBuilder jsonString = new StringBuilder();
       HttpResponse response = httpClient.execute(getRequest);
 
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (response.getEntity().getContent())));
 
-      while ((output = br.readLine()) != null) {
-        s = new JSONObject(output).getJSONObject("response");
-        break;
+      // build the json into a string
+      while ((line = br.readLine()) != null) {
+        jsonString.append(line);
       }
-      httpClient.getConnectionManager().shutdown();
       
-      papertrailSystem = new PapertrailSystem();
-      papertrailSystem.id = String.valueOf(s.getInt("id"));
-      papertrailSystem.syslogPort = s.getInt("syslog_port");
-      papertrailSystem.name = s.getString("name");
-      papertrailSystem.papertrailId = s.getString("papertrail_id");
-      papertrailSystem.syslogHostName = s.getString("syslog_hostname"); 
+      // parse the string into a json object
+      JSONObject json = new JSONObject(jsonString.toString());
+      // get the actual data
+      JSONArray data = json.getJSONArray("data");      
       
-      sendMessageToLogger("Successfully fetched Papertrail logger info.");
+      if (json.getBoolean("success")) {
+        if (data.length() > 0) {
+          papertrailSystem = new PapertrailSystem(new JSONObject(data.get(0).toString()));
+          sendMessageToLogger("Successfully fetched Papertrail logger info.");
+        }
+      } else {
+        throw new Exception("Failure fetching Papertrail System.");
+      }      
 
     } catch (JSONException e) {
       throw new ProcessException(
           "Error returning Thurgood logger info. Could not parse JSON.");
     } catch (IOException e) {
       throw new ProcessException("IO Error processing Thurgood logger info.");
+    } catch (Exception e) {
+      throw new ProcessException(e.getMessage());
+    } finally {
+      httpClient.getConnectionManager().shutdown();
     }
 
-  }       
+  }
 
   public void writeLog4jXmlFile() throws ProcessException {
 
@@ -224,7 +241,8 @@ public abstract class Thurgood {
 
         // use the id of the system instead of the participantId
         if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
-          line = line.replace("{{PARTICIPANT_ID}}", papertrailSystem.papertrailId);
+          line = line.replace("{{PARTICIPANT_ID}}",
+              papertrailSystem.papertrailId);
 
         out.write(line + "\r\n");
       }
@@ -245,12 +263,10 @@ public abstract class Thurgood {
     sendMessageToLogger("Pusing files, assets, jars, etc. to git repo....");
     return GitterUp.unzipToGit(submissionUrl, server.repoName, langShellFolder);
   }
-  
+
   public void sendMessageToLogger(String text) {
 
-    String output;
-    JSONObject results = null;
-
+    String line;
     DefaultHttpClient httpClient = new DefaultHttpClient();
     HttpPost postRequest = new HttpPost(System.getenv("THURGOOD_API_URL")
         + "/jobs/" + this.job.jobId + "/message");
@@ -270,54 +286,85 @@ public abstract class Thurgood {
       StringEntity input = new StringEntity(msgArg.toString());
       postRequest.setEntity(input);
 
+      StringBuilder jsonString = new StringBuilder();
       HttpResponse response = httpClient.execute(postRequest);
 
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (response.getEntity().getContent())));
 
-      while ((output = br.readLine()) != null) {
-        results = new JSONObject(output);
-        break;
+      while ((line = br.readLine()) != null) {
+        jsonString.append(line);
       }
-      httpClient.getConnectionManager().shutdown();  
       
-      if (!results.getString("response").equals("true")) throw new ProcessException("Error sending message! Not Sent."); 
+      // parse the string into a json object
+      JSONObject json = new JSONObject(jsonString.toString());
+      
+      if (!json.getBoolean("success")) {
+        throw new ProcessException("Error sending message! Not Sent.");
+      }       
 
     } catch (JSONException e) {
       throw new ProcessException(
-          "Error sending message. Could not parse JSON.");
+          "Error sending message. Could not parse JSON: " + e.getMessage());
     } catch (IOException e) {
       throw new ProcessException("IO Error processing Thurgood logger info.");     
-    }    
+    } finally {
+      httpClient.getConnectionManager().shutdown();
+    }
     
   }
-  
+
+  private void ensureZipFile() throws ProcessException {
+
+    if (submissionUrl.lastIndexOf('.') > 0) {
+      String extension = submissionUrl.substring(
+          submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
+      System.out.println("Submission file extension: " + extension);
+      if (!extension.equalsIgnoreCase("zip")) {
+        sendMessageToLogger("Unsupported file type: " + extension);
+        throw new ProcessException("Unsupported file type: " + extension);
+      }
+    } else {
+      throw new ProcessException("Unsupported file type: Unknown");
+    }
+
+  }
+
   public abstract void writeCloudspokesPropertiesFile() throws ProcessException;
 
-  public abstract void writeBuildPropertiesFile() throws ProcessException;  
+  public abstract void writeBuildPropertiesFile() throws ProcessException;
 
   protected class Server {
 
     String id;
     String platform;
     String username;
-    String supportedLanguages;
+    ArrayList<String> supportedLanguages;
     String repoName;
     String instanceUrl;
     String installedServices;
     String password;
     String operatingSystem;
-    
-    Server() {}
+
+    Server() {
+    }
 
     Server(JSONObject s) throws JSONException {
-      this.id = s.getString("id");
-      this.platform = s.getString("platform");
-      this.username = s.getString("username");
-      this.supportedLanguages = s.getString("supported_programming_language");
-      this.repoName = s.getString("repo_name");
-      this.instanceUrl = s.getString("instance_url");
-      this.password = s.getString("password");
+      this.id = s.getString("_id");
+      this.platform = s.optString("platform", "").toLowerCase();
+      this.username = s.optString("username", "");
+      this.repoName = s.optString("repoName", "");
+      this.instanceUrl = s.optString("instanceUrl", "");
+      this.password = s.optString("password", "");
+      // convert the languages into an array
+      this.supportedLanguages = new ArrayList<String>();
+      JSONArray jArray = (JSONArray) s.getJSONArray("languages");
+      if (jArray != null) {
+        for (int i = 0; i < jArray.length(); i++) {
+          supportedLanguages.add(jArray.get(i).toString().toLowerCase());
+        }
+      }
+
     }
 
   }
@@ -329,37 +376,42 @@ public abstract class Thurgood {
     String syslogHostName;
     String name;
     String papertrailId;
-    
-    PapertrailSystem() {}
+
+    PapertrailSystem() {
+    }
 
     PapertrailSystem(JSONObject s) throws JSONException {
-      this.id = s.getString("id");
-      this.syslogPort = s.getInt("syslog_port");
+      this.id = s.getString("_id");
+      this.syslogPort = s.getInt("syslogPort");
       this.name = s.getString("name");
-      this.papertrailId = s.getString("papertrail_id");
-      this.syslogHostName = s.getString("syslog_hostname");
+      this.papertrailId = s.getString("papertrailId");
+      this.syslogHostName = s.getString("syslogHostname");
     }
 
   }
-  
+
   protected class Job {
 
     String jobId;
     String codeUrl;
     String language;
     String platform;
-    String userId;
-    String options;
-    
+    String handle;
+    String loggerId;
+    JSONObject options;
+
     Job(JSONObject j) throws JSONException {
-      this.jobId = j.getString("job_id");
-      this.codeUrl = j.getString("code_url");
-      this.language = j.getString("language");
-      this.platform = j.getString("platform");
-      this.userId = j.getString("user_id");
-      this.options = j.getString("options");
+      this.jobId = j.getString("_id");
+      this.codeUrl = j.optString("codeUrl", "");
+      this.language = j.optString("language", "").toLowerCase();
+      this.platform = j.optString("platform", "").toLowerCase();
+      this.handle = j.optString("userId", "");
+      this.loggerId = j.optString("loggerId", null);
+      JSONArray jsonOptions = j.getJSONArray("options");
+      if (jsonOptions.length() > 0)
+        options = new JSONObject(jsonOptions.get(0).toString());
     }
 
-  }  
+  }
 
 }
