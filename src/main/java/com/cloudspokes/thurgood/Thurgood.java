@@ -52,7 +52,7 @@ public abstract class Thurgood {
       this.challengeId = job.options.optInt("challenge_id", 0);
     }
 
-    System.out.println("Processing job: " + job.jobId);
+    System.out.println("[INFO] Processing " + submissionType + " job: " + job.jobId);
     sendMessageToLogger("Processing language specific job for Thurgood queue.");
 
     ensureZipFile();
@@ -77,7 +77,11 @@ public abstract class Thurgood {
 
       StringBuilder jsonString = new StringBuilder();
       HttpResponse response = httpClient.execute(getRequest);
-
+      
+      if (response.getStatusLine().getStatusCode() != 200) {
+        throw new Exception("Thurgood API returned a status of " + response.getStatusLine().getStatusCode());
+      }
+      
       BufferedReader br = new BufferedReader(new InputStreamReader(
           (response.getEntity().getContent())));
 
@@ -147,6 +151,8 @@ public abstract class Thurgood {
         if (data.length() > 0) {
           server = new Server(new JSONObject(data.get(0).toString()));
           sendMessageToLogger("Successfully fetched Thurgood testing server info.");
+        } else {
+          System.out.println("[WARN] No server found for job " + this.job.jobId);
         }
       } else {
         throw new Exception("Failure fetching Server.");
@@ -220,11 +226,16 @@ public abstract class Thurgood {
   }
 
   public void writeLog4jXmlFile() throws ProcessException {
+    
+    if (server == null) {
+      System.out.println("[FATAL] No server assigned. Cannot write log4j file for job " + this.job.jobId); 
+      throw new ProcessException("No Server assigned to this job.");
+    }    
 
     PrintWriter out = null;
     String outputfile = SHELLS_DIRECTORY + "/" + submissionType + "/log4j.xml";
 
-    try {
+    try {      
       URL log4jTemplate = new URL(
           "http://cs-thurgood.s3.amazonaws.com/log4j.xml");
       File outFile = new File(outputfile);
@@ -246,7 +257,7 @@ public abstract class Thurgood {
 
         out.write(line + "\r\n");
       }
-      System.out.println("Successfully wrote log4j.xml");
+      System.out.println("[INFO] Successfully wrote log4j.xml for job " + this.job.jobId);
       sendMessageToLogger("Successfully wrote log4j.xml to attach logger to Papertrail.");
 
     } catch (IOException e) {
@@ -319,7 +330,7 @@ public abstract class Thurgood {
     if (submissionUrl.lastIndexOf('.') > 0) {
       String extension = submissionUrl.substring(
           submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
-      System.out.println("Submission file extension: " + extension);
+      System.out.println("[INFO] Submission file extension: " + extension);
       if (!extension.equalsIgnoreCase("zip")) {
         sendMessageToLogger("Cannot process code. Unsupported file type: " + extension + ". Only .zip files are supported.");
         throw new ProcessException("Unsupported file type: " + extension);

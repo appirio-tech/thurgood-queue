@@ -52,8 +52,19 @@ public class Tester {
                   new File("./src/main/webapp/WEB-INF/shells/apex"));
 
           System.out.println(results);
-        } else if (Integer.parseInt(choice) == 2) {          
-          System.out.println("done");
+        } else if (Integer.parseInt(choice) == 2) {   
+          
+          String message = "{\"job_id\":\"52a6f0c162271a020000000e\",\"type\":\"java\"}";
+          JSONObject jsonMessage = new JSONObject(message);          
+          String jobId = jsonMessage.getString("job_id");
+          Thurgood t = new ThurgoodFactory().getTheJudge("apex");          
+          t.init(jobId);
+          t.writeBuildPropertiesFile();          
+          t.writeCloudspokesPropertiesFile();
+          t.writeLog4jXmlFile();    
+          System.out.println("DONE!!");
+          
+          
         } else if (Integer.parseInt(choice) == 3) {          
           writeLog4jXmlFile("logs.papertrailapp.com:24214");
         } else if (Integer.parseInt(choice) == 4) {          
@@ -88,7 +99,7 @@ public class Tester {
 
   private void showMenu() {
     System.out.println("\n1. Unzip to Git");
-    System.out.println("2. Reserve server");
+    System.out.println("2. Run the LangReceiver code (full monty)");
     System.out.println("3. Write Log4j File");
     System.out.println("4. Get System");
     System.out.println("5. Send Message");

@@ -15,6 +15,11 @@ public class Apex extends Thurgood {
   @Override
   public void writeBuildPropertiesFile() throws ProcessException {
     
+    if (server == null) {
+      System.out.println("[FATAL] No server assigned. Cannot write build.properties file for job " + this.job.jobId); 
+      throw new ProcessException("No Server assigned to this job.");
+    }    
+    
     BufferedWriter out = null;
     String file_name = SHELLS_DIRECTORY + "/apex/build.properties";
     
@@ -25,7 +30,7 @@ public class Apex extends Thurgood {
       out.write("sf.username = " + server.username + "\n");
       out.write("sf.password = " + server.password + "\n");
       out.write("sf.serverurl = " + server.instanceUrl);
-      System.out.println("Successfully wrote build.properties");
+      System.out.println("[INFO] Successfully wrote build.properties for job " + this.job.jobId);
       sendMessageToLogger("Successfully wrote build.properties for Apex deployment.");
     
     } catch (IOException e) {
@@ -45,6 +50,11 @@ public class Apex extends Thurgood {
   @Override
   public void writeCloudspokesPropertiesFile() throws ProcessException {
     
+    if (server == null) {
+      System.out.println("[FATAL] No server assigned. Cannot write topcoder.properties file for job " + this.job.jobId); 
+      throw new ProcessException("No Server assigned to this job.");
+    }
+    
     BufferedWriter out = null;
     String file_name = SHELLS_DIRECTORY + "/apex/cloudspokes.properties";
     
@@ -61,10 +71,11 @@ public class Apex extends Thurgood {
       out.write("membername=" + handle + "\n");      
       out.write("job_id=" + job.jobId + "\n");
       out.write("api_key=" + System.getenv("THURGOOD_API_KEY"));
-      System.out.println("Successfully wrote cloudspokes.properties"); 
+      System.out.println("[INFO] Successfully wrote topcoder.properties for job " + this.job.jobId);  
+      sendMessageToLogger("Successfully wrote topcoder.properties for job.");
       
     } catch (IOException e) {
-      throw new ProcessException("IO Error creating cloudspokes.properties file.");
+      throw new ProcessException("IO Error creating topcoder.properties file.");
     } finally {
       if (out != null) {
         try {
