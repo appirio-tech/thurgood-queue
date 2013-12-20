@@ -55,7 +55,7 @@ public abstract class Thurgood {
     System.out.println("[INFO] Processing " + submissionType + " job: " + job.jobId);
     sendMessageToLogger("Processing language specific job for Thurgood queue.");
 
-    ensureZipFile();
+    // ensureZipFile();
     getServer();
     getLoggerSystem();    
 
@@ -326,22 +326,6 @@ public abstract class Thurgood {
       httpClient.getConnectionManager().shutdown();
     }
     
-  }
-
-  private void ensureZipFile() throws ProcessException {
-
-    if (submissionUrl.lastIndexOf('.') > 0) {
-      String extension = submissionUrl.substring(
-          submissionUrl.lastIndexOf('.') + 1, submissionUrl.length());
-      System.out.println("[INFO] Submission file extension: " + extension);
-      if (!extension.equalsIgnoreCase("zip")) {
-        sendMessageToLogger("Cannot process code. Unsupported file type: " + extension + ". Only .zip files are supported.");
-        throw new ProcessException("Unsupported file type: " + extension);
-      }
-    } else {
-      throw new ProcessException("Unsupported file type: Unknown");
-    }
-
   }
 
   public abstract void writeCloudspokesPropertiesFile() throws ProcessException;
