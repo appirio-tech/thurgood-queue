@@ -61,16 +61,8 @@ public class Java extends Thurgood {
     try {    
 
       FileWriter fstream = new FileWriter(file_name);
-      out = new BufferedWriter(fstream);
-      if (challengeId > 0) {
-        out.write("challenge_id=" + challengeId + "\n");        
-        out.write("s3_bucket=" + challengeId + '/' + handle + "\n");
-      } else {      
-        out.write("s3_bucket=" + job.jobId + "\n");
-      }
-      out.write("membername=" + handle + "\n");        
-      out.write("job_id=" + job.jobId + "\n");
-      out.write("api_key=" + System.getenv("THURGOOD_API_KEY"));      
+      out = new BufferedWriter(fstream);       
+      out.write("job_id=" + job.jobId + "\n");   
       System.out.println("[INFO] Successfully wrote topcoder.properties for job " + this.job.jobId);  
       sendMessageToLogger("Successfully wrote topcoder.properties for job.");
       

@@ -249,11 +249,14 @@ public abstract class Thurgood {
         if (line.indexOf("{{SYSLOGHOST}}", 0) != -1)
           line = line.replace("{{SYSLOGHOST}}", papertrailSystem.syslogHostName
               + ":" + papertrailSystem.syslogPort);
+        
+        // add in the job id
+        line = line.replace("{{JOB_ID}}", job.jobId);
 
         // use the id of the system instead of the participantId
-        if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
-          line = line.replace("{{PARTICIPANT_ID}}",
-              papertrailSystem.papertrailId);
+        // if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
+          // line = line.replace("{{PARTICIPANT_ID}}",
+              // papertrailSystem.papertrailId);
 
         out.write(line + "\r\n");
       }
