@@ -314,6 +314,52 @@ public abstract class Thurgood {
     }
     
   }
+  
+  public void cleanupFailedSubmit() {
+
+    String line;
+
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet(System.getenv("THURGOOD_API_URL")
+        + "/jobs/" + this.job.jobId + "/complete");
+    getRequest.setHeader(new BasicHeader("Authorization", "Token token="
+        + System.getenv("THURGOOD_API_KEY")));
+    getRequest.addHeader("accept", "application/json");
+
+    try {
+
+      StringBuilder jsonString = new StringBuilder();
+      HttpResponse response = httpClient.execute(getRequest);      
+      BufferedReader br = new BufferedReader(new InputStreamReader(
+          (response.getEntity().getContent())));
+
+      // build the json into a string
+      while ((line = br.readLine()) != null) {
+        jsonString.append(line);
+      }
+
+      // parse the string into a json object
+      JSONObject json = new JSONObject(jsonString.toString());
+      if (json.getBoolean("success")) {
+        System.out.println("[INFO] Marking failed job as complete.");
+      } else {
+        System.out.println("[INFO] Unable to mark failed job as complete.");
+      }
+
+    } catch (JSONException e) {
+      throw new ProcessException(
+          "Error returning Thurgood job complete info. Could not parse JSON: "
+              + e.getMessage());
+    } catch (IOException e) {
+      throw new ProcessException("IO Error processing Thurgood job complete info: "
+          + e.getMessage());
+    } catch (Exception e) {
+      throw new ProcessException(e.getMessage());
+    } finally {
+      httpClient.getConnectionManager().shutdown();
+    }
+    
+  }  
 
   public abstract void writeCloudspokesPropertiesFile() throws ProcessException;
 
@@ -331,8 +377,7 @@ public abstract class Thurgood {
     String password;
     String operatingSystem;
 
-    Server() {
-    }
+    Server() {}
 
     Server(JSONObject s) throws JSONException {
       this.id = s.getString("_id");

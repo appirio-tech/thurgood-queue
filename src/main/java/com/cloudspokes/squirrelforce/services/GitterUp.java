@@ -10,7 +10,7 @@ public class GitterUp {
 
   public static String unzipToGit(String zipUrl, String repoName, File shellFolder) throws ProcessException {
 
-    System.out.println("Pushing files to github...");
+    System.out.println("[DEBUG] Pushing files to github...");
     String results = "";
 
     MultiSourceCommitService commitService = new MultiSourceCommitService();
@@ -22,10 +22,12 @@ public class GitterUp {
     
     // downlod the actual code files
     try {
+      System.out.println("[DEBUG] Unzipping file...");
       sourceZip = IOUtils.downloadFromUrlToTempFile(zipUrl);
       // will throw an exception here if not a .zip file
       tempZipFolder = IOUtils.unzipToTempDir(sourceZip);
     } catch (Exception e) {
+      System.out.println("[DEBUG] Error unzipping file!");
       deleteSourceFile(sourceZip);
       return "Unable to unzip source code: " + e.getMessage();
     }

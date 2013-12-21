@@ -59,13 +59,16 @@ public class Tester {
           String jobId = jsonMessage.getString("job_id");
           Thurgood t = new ThurgoodFactory().getTheJudge("apex");          
           t.init(jobId);
-          //t.writeBuildPropertiesFile();          
-          //t.writeCloudspokesPropertiesFile();
-          //t.writeLog4jXmlFile();    
+          t.writeBuildPropertiesFile();          
+          t.writeCloudspokesPropertiesFile();
+          t.writeLog4jXmlFile();    
           // push all of the files to github including the shells folder
           final File langShellFolder = new File("./src/main/webapp/WEB-INF/shells/apex");           
           String results = t.pushFilesToGit(langShellFolder);
-          System.out.println(results);           
+          System.out.println(results);      
+          if (!results.startsWith("Files successfully committed")) {
+            t.cleanupFailedSubmit();
+          }
           System.out.println("DONE!!");
           
           

@@ -81,8 +81,13 @@ public class LangReceiver implements Runnable {
           
           // push all of the files to github including the shells folder
           String results = t.pushFilesToGit(langShellFolder);
-          System.out.println(results); 
+          System.out.println("[DEBUG] " + results); 
           t.sendMessageToLogger(results);
+          
+          // if the submission process failed notify the api
+          if (!results.startsWith("Files successfully committed")) {
+            t.cleanupFailedSubmit();
+          }
              
         } catch (ProcessException e) {
           System.out.println("[FATAL] " + e.getMessage());     
