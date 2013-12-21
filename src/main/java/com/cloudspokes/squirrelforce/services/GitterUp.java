@@ -35,6 +35,7 @@ public class GitterUp {
     List<File> folders = Arrays.asList(shellFolder, tempZipFolder);
 
     try {
+      System.out.println("[DEBUG] Pushing to github...");
       String repoUrl = commitService.commitFromFoldersToNewRepo(folders,
           repoName, false);
       results = "Files successfully committed to repo: " + repoUrl;
