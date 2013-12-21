@@ -54,14 +54,18 @@ public class Tester {
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {   
           
-          String message = "{\"job_id\":\"52b449533832a40200000007\",\"type\":\"salesforce.com\"}";
+          String message = "{\"job_id\":\"52b449533832a40200000007\",\"type\":\"apex\"}";
           JSONObject jsonMessage = new JSONObject(message);          
           String jobId = jsonMessage.getString("job_id");
           Thurgood t = new ThurgoodFactory().getTheJudge("apex");          
           t.init(jobId);
-          t.writeBuildPropertiesFile();          
-          t.writeCloudspokesPropertiesFile();
-          t.writeLog4jXmlFile();    
+          //t.writeBuildPropertiesFile();          
+          //t.writeCloudspokesPropertiesFile();
+          //t.writeLog4jXmlFile();    
+          // push all of the files to github including the shells folder
+          final File langShellFolder = new File("./src/main/webapp/WEB-INF/shells/apex");           
+          String results = t.pushFilesToGit(langShellFolder);
+          System.out.println(results);           
           System.out.println("DONE!!");
           
           
