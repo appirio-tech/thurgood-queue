@@ -29,9 +29,8 @@ public abstract class Thurgood {
 
   String submissionType;
   String submissionUrl;
-  String participantId;
   String handle;
-  int challengeId;
+  File tempZipFolder;
   Server server;
   PapertrailSystem papertrailSystem;
   Job job;
@@ -46,16 +45,9 @@ public abstract class Thurgood {
           + e.getMessage());
     }
 
-    // try and find any supported options that may exist
-    if (job.options != null) {
-      this.participantId = job.options.optString("participant_id", "");
-      this.challengeId = job.options.optInt("challenge_id", 0);
-    }
-
     System.out.println("[INFO] Processing " + submissionType + " job: " + job.jobId);
     sendMessageToLogger("Processing language specific job for Thurgood queue.");
 
-    // ensureZipFile();
     getServer();
     getLoggerSystem();    
 
@@ -252,11 +244,6 @@ public abstract class Thurgood {
         
         // add in the job id
         line = line.replace("{{JOB_ID}}", job.jobId);
-
-        // use the id of the system instead of the participantId
-        // if (line.indexOf("{{PARTICIPANT_ID}}", 0) != -1)
-          // line = line.replace("{{PARTICIPANT_ID}}",
-              // papertrailSystem.papertrailId);
 
         out.write(line + "\r\n");
       }

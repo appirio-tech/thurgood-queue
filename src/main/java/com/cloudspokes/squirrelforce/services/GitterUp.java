@@ -16,9 +16,20 @@ public class GitterUp {
     MultiSourceCommitService commitService = new MultiSourceCommitService();
     commitService.setCredentials(System.getenv("GIT_USERNAME"),
         System.getenv("GIT_PASSWORD"), System.getenv("GIT_OWNER"));
-
-    File sourceZip = IOUtils.downloadFromUrlToTempFile(zipUrl);
-    File tempZipFolder = IOUtils.unzipToTempDir(sourceZip);
+    
+    File sourceZip = null;
+    File tempZipFolder = null;
+    
+    // downlod the actual code files
+    try {
+      sourceZip = IOUtils.downloadFromUrlToTempFile(zipUrl);
+      // will throw an exception here if not a .zip file
+      tempZipFolder = IOUtils.unzipToTempDir(sourceZip);
+    } catch (Exception e) {
+      deleteSourceFile(sourceZip);
+      return "Unable to unzip source code: " + e.getMessage();
+    }
+    
     List<File> folders = Arrays.asList(shellFolder, tempZipFolder);
 
     try {
@@ -31,12 +42,20 @@ public class GitterUp {
           + " -  " + e.getMessage();
       throw new ProcessException(results);
     } finally {
-      sourceZip.delete();
+      deleteSourceFile(sourceZip);
       IOUtils.deleteDir(tempZipFolder);
     }
 
     return results;
 
+  }
+  
+  private static void deleteSourceFile(File sourceZip) {
+    try {
+      sourceZip.delete();
+    } catch (Exception e) {
+      // file may not have actually been sucessfully downloaded
+    }
   }
 
 }
