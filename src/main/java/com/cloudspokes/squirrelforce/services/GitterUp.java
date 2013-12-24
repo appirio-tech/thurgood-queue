@@ -27,7 +27,7 @@ public class GitterUp {
       // will throw an exception here if not a .zip file
       tempZipFolder = IOUtils.unzipToTempDir(sourceZip);
     } catch (Exception e) {
-      System.out.println("[DEBUG] Error unzipping file!");
+      System.out.println("[FATAL] Error unzipping file!");
       deleteSourceFile(sourceZip);
       return "Unable to unzip source code: " + e.getMessage();
     }

@@ -63,6 +63,7 @@ public class Java extends Thurgood {
       FileWriter fstream = new FileWriter(file_name);
       out = new BufferedWriter(fstream);       
       out.write("job_id=" + job.jobId + "\n");   
+      out.write("steps=" + job.steps);
       System.out.println("[INFO] Successfully wrote topcoder.properties for job " + this.job.jobId);  
       sendMessageToLogger("Successfully wrote topcoder.properties for job.");
       

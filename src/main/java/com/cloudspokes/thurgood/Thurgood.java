@@ -428,6 +428,7 @@ public abstract class Thurgood {
     String platform;
     String handle;
     String loggerId;
+    String steps;    
     JSONObject options;
 
     Job(JSONObject j) throws JSONException {
@@ -437,6 +438,7 @@ public abstract class Thurgood {
       this.platform = j.optString("platform", "").toLowerCase();
       this.handle = j.optString("userId", "");
       this.loggerId = j.optString("loggerId", null);
+      this.steps = j.optString("steps", null);
       JSONArray jsonOptions = j.getJSONArray("options");
       if (jsonOptions.length() > 0)
         options = new JSONObject(jsonOptions.get(0).toString());
