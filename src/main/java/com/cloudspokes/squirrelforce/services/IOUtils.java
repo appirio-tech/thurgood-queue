@@ -1,6 +1,7 @@
 package com.cloudspokes.squirrelforce.services;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,10 +31,13 @@ public class IOUtils {
     private static final int READ_BUFFER_SIZE = 8096;
     private static final int MAX_HTTP_REQUEST_TIMEOUT = 0; // infinite
     private static final String HTTP_GET_METHOD = "GET";
+    private static final String HTTP_POST_METHOD = "POST";
     private static final String TEXT_FILE_ENCODING = "UTF-8";
+    private static final String POST_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String TEMPDIR_PROPERTY = "java.io.tmpdir";
     private static final String DEFAULT_TEMPDIR_IF_NONE_SYSTEM = ".";
     private static final String TEMP_PATH_PREFIX = "octavius3-";
+    private static final String ONLINE_REVIEW_URL = "https://software.topcoder.com/Connect/Receiver";
 
     private IOUtils() {
         // singleton helper class
@@ -46,9 +50,12 @@ public class IOUtils {
         try {
             OutputStream outputStream = new FileOutputStream(tempFile);
             try {
-                copy(httpGet(url), outputStream);
+                if (url.equals(ONLINE_REVIEW_URL)) {
+                  copy(httpPost(url), outputStream); 
+                } else {
+                  copy(httpGet(url), outputStream);
+                }
                 return tempFile;
-
             } finally {
                 outputStream.close();
             }
@@ -58,7 +65,40 @@ public class IOUtils {
             throw new RuntimeException(e);
         }
     }
+    
+    private static InputStream httpPost(String url) {
+      String urlParameters = "username=Thurgood&password=kMa1IUYqZf53a";
+      try {
+          HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+          conn.setReadTimeout(MAX_HTTP_REQUEST_TIMEOUT);
+          conn.setDoOutput(true);
+          conn.setDoInput(true);
+          conn.setInstanceFollowRedirects(false); 
+          conn.setRequestMethod(HTTP_POST_METHOD);
+          conn.setRequestProperty("Content-Type", POST_CONTENT_TYPE); 
+          conn.setRequestProperty("charset", TEXT_FILE_ENCODING);
+          conn.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
+          //conn.setInstanceFollowRedirects(true);
+          conn.setUseCaches (false);
+                    
+          DataOutputStream wr = new DataOutputStream(conn.getOutputStream ());
+          wr.writeBytes(urlParameters);
+          wr.flush();
+          wr.close();          
 
+          int responseCode = conn.getResponseCode();
+          if (responseCode != HttpServletResponse.SC_OK) {
+              String responseMessage = conn.getResponseMessage();
+              throw new RuntimeException(responseCode + "(" + responseMessage + ") error on " + HTTP_POST_METHOD + " " + url);
+          }
+          return conn.getInputStream();
+
+      } catch (IOException e) {
+          throw new RuntimeException(e);
+      }
+    }    
+
+    
     private static InputStream httpGet(String url) {
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
