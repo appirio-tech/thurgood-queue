@@ -261,7 +261,7 @@ public abstract class Thurgood {
   }
 
   public String pushFilesToGit(File langShellFolder) {
-    sendMessageToLogger("Pusing files, assets, jars, etc. to git repo....");
+    sendMessageToLogger("Pushing files, assets, jars, etc. to git repo....");
     return GitterUp.unzipToGit(submissionUrl, server.repoName, langShellFolder);
   }
 
