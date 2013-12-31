@@ -54,7 +54,7 @@ public class Tester {
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {   
           
-          String message = "{\"job_id\":\"52b449533832a40200000007\",\"type\":\"apex\"}";
+          String message = "{\"job_id\":\"52bc26a0a8a0280200000002\",\"type\":\"apex\"}";
           JSONObject jsonMessage = new JSONObject(message);          
           String jobId = jsonMessage.getString("job_id");
           Thurgood t = new ThurgoodFactory().getTheJudge("apex");          
@@ -77,7 +77,8 @@ public class Tester {
         } else if (Integer.parseInt(choice) == 4) {          
           getPapertrailSystem("a0AK00000076XgBMAU");
         } else if (Integer.parseInt(choice) == 5) {
-          sendMessage("1f69e4efcd1fd5d451c44d5f7a0de586","my message!!");
+          //IOUtils.httpPost("http://requestb.in/unkgm0un");
+          System.out.println("POSTed!");
 
         } else if (Integer.parseInt(choice) == 6) {          
           
@@ -109,7 +110,7 @@ public class Tester {
     System.out.println("2. Run the LangReceiver code (full monty)");
     System.out.println("3. Write Log4j File");
     System.out.println("4. Get System");
-    System.out.println("5. Send Message");
+    System.out.println("5. Post to RequestBin");
     System.out.println("6. Get Job");
     System.out.println("99. Exit");
     System.out.println(" ");

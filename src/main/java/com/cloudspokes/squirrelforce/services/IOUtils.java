@@ -37,7 +37,7 @@ public class IOUtils {
     private static final String TEMPDIR_PROPERTY = "java.io.tmpdir";
     private static final String DEFAULT_TEMPDIR_IF_NONE_SYSTEM = ".";
     private static final String TEMP_PATH_PREFIX = "octavius3-";
-    private static final String ONLINE_REVIEW_URL = "https://software.topcoder.com/Connect/Receiver";
+    private static final String ONLINE_REVIEW_URL = "https://software.topcoder.com/review/actions/DownloadContestSubmission.do?method=downloadContestSubmission";
 
     private IOUtils() {
         // singleton helper class
@@ -50,7 +50,7 @@ public class IOUtils {
         try {
             OutputStream outputStream = new FileOutputStream(tempFile);
             try {
-                if (url.equals(ONLINE_REVIEW_URL)) {
+                if (url.startsWith(ONLINE_REVIEW_URL)) {
                   copy(httpPost(url), outputStream); 
                 } else {
                   copy(httpGet(url), outputStream);
