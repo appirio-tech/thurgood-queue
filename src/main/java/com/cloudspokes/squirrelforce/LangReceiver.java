@@ -87,6 +87,8 @@ public class LangReceiver implements Runnable {
           // if the submission process failed notify the api
           if (!results.startsWith("Files successfully committed")) {
             t.cleanupFailedSubmit();
+          } else {
+            t.sendMessageToLogger("Waiting for Thurgood security scan to be begin. Please hold tight. This may take a minute or two.");
           }
              
         } catch (ProcessException e) {
