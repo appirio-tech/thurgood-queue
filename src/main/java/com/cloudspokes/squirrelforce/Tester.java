@@ -48,13 +48,13 @@ public class Tester {
           String results = GitterUp
               .unzipToGit(
                   "http://cs-public.s3.amazonaws.com/squirrelforce/jenkins-test.zip",
-                  "jenkins-test",
+                  "sfdc-deploy4",
                   new File("./src/main/webapp/WEB-INF/shells/apex"));
 
           System.out.println(results);
         } else if (Integer.parseInt(choice) == 2) {   
           
-          String message = "{\"job_id\":\"52bc26a0a8a0280200000002\",\"type\":\"apex\"}";
+          String message = "{\"job_id\":\"52c5cc904da95c0200f6973e\",\"type\":\"apex\"}";
           JSONObject jsonMessage = new JSONObject(message);          
           String jobId = jsonMessage.getString("job_id");
           Thurgood t = new ThurgoodFactory().getTheJudge("apex");          
@@ -63,12 +63,12 @@ public class Tester {
           t.writeCloudspokesPropertiesFile();
           t.writeLog4jXmlFile();    
           // push all of the files to github including the shells folder
-          final File langShellFolder = new File("./src/main/webapp/WEB-INF/shells/apex");           
-          String results = t.pushFilesToGit(langShellFolder);
-          System.out.println(results);      
-          if (!results.startsWith("Files successfully committed")) {
-            t.cleanupFailedSubmit();
-          }
+//          final File langShellFolder = new File("./src/main/webapp/WEB-INF/shells/apex");           
+//          String results = t.pushFilesToGit(langShellFolder);
+//          System.out.println(results);      
+//          if (!results.startsWith("Files successfully committed")) {
+//            t.cleanupFailedSubmit();
+//          }
           System.out.println("DONE!!");
           
           
