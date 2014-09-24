@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.egit.github.core.Blob;
 import org.eclipse.egit.github.core.Commit;
+import org.eclipse.egit.github.core.CommitUser;
 import org.eclipse.egit.github.core.Reference;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.Tree;
@@ -175,11 +177,11 @@ public class MultiSourceCommitService {
         }
         return false;
     }
-    
+
     private Repository getRepo(String repoName) throws IOException {
       Repository repo = repositoryService.getRepository(repoOwner, repoName);
       return repo;
-  }    
+  }
 
 //    private Repository newRepo(String repoName, boolean isPrivate) throws IOException {
 //        Repository repo = new InitializableRepository();
@@ -229,6 +231,12 @@ public class MultiSourceCommitService {
         newCommit.setMessage(commitMessage);
         newCommit.setTree(tree);
         newCommit.setParents(Arrays.asList(new Commit().setSha(previousCommitSha)));
+        CommitUser author = new CommitUser();
+        author.setName("Jeff Douglas");
+        author.setEmail("jeff@appirio.com");
+        author.setDate(new Date());
+        newCommit.setAuthor(author);
+        newCommit.setCommitter(author);
         newCommit = this.dataService.createCommit(repo, newCommit);
 
         masterRef.getObject().setSha(newCommit.getSha());
