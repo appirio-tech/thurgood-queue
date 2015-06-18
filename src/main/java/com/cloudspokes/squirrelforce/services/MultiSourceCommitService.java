@@ -217,6 +217,12 @@ public class MultiSourceCommitService {
         Blob blob = new Blob();
         blob.setContent(content);
         blob.setEncoding(encoding);
+         try{
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException e){
+            System.out.println("Interrrupted Exception");
+        }
         String sha = this.dataService.createBlob(repo, blob);
         return sha;
     }
