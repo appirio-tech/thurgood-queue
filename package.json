@@ -1,0 +1,13 @@
+{
+  "name": "thurgood-queue",
+  "version": "1.0.0",
+  "engines": {
+    "node": "0.10.x"
+  },
+  "description": "Queue UI for Thurgood",
+  "main": "app.js",
+  "license": "ISC",
+  "dependencies": {
+    "kue": "^0.9.4"
+  }
+}
