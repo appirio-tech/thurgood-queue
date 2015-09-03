@@ -1,1 +1,1 @@
-worker: java $JAVA_OPTS -cp target/classes:target/dependency/* com.cloudspokes.squirrelforce.Main
+web: node app.js

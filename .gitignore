@@ -1,12 +1,3 @@
-.classpath
-.project
-.settings
-.springBeans
-target
+node_modules
 .DS_Store
-
-src/main/java/com/cloudspokes/thurgood/ThurgoodTestChallenge.java
-src/main/java/com/cloudspokes/thurgood/ThurgoodTestJob.java
-src/main/webapp/WEB-INF/shells/apex/build.properties
-src/main/webapp/WEB-INF/shells/apex/cloudspokes.properties
-src/main/webapp/WEB-INF/shells/apex/log4j.xml
+.env
