@@ -8,6 +8,6 @@
   "main": "app.js",
   "license": "ISC",
   "dependencies": {
-    "kue": "^0.9.4"
+    "kue": "^0.10.0"
   }
 }
